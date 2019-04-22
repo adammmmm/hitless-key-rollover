@@ -106,7 +106,8 @@ with open('temp.j2') as t_fh:
     t_format = t_fh.read()
 
 template = Template(t_format)
-lgr.info(template.render(DATA))
+if data['LOGGING']:
+    lgr.info(template.render(DATA))
 
 for router in data['HOSTS']:
     print(f"Configuring {router}")

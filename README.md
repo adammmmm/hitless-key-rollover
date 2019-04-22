@@ -2,7 +2,7 @@
 
 This is one of my first forays into programming, so there are most likely loads of "wrong" ways of doing what I'm doing.
 
-The idea got to me when comparing macsec-options on juniper/cisco routers where juniper don't have time-based SAK rekeys, the recommendation is instead to keep the CKN/CAK rekeys short, hence this script. 
+I got the idea when comparing macsec options on juniper/cisco routers where juniper don't have time-based SAK rekeys, the recommendation is instead to keep the CKN/CAK rekeys short, hence this script. 
 
 Don't want to manually send out new keys every other day.
 
@@ -29,6 +29,8 @@ Guessing they should be pretty self explanatory, USER/PASS will be the credentia
 It currently needs to already be configured with one key for the script to work.
 
 And of course HOSTS should be all your routers ip-addresses.
+
+Add this to crontab and make it execute once every ROLLINTERVAL/2.
 
 ---
 

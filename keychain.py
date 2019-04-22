@@ -29,7 +29,7 @@ def generate_hex(self):
     return str.lower(rand)
 
 with open("data.yml") as fh:
-    data = yaml.load(fh.read())
+    data = yaml.load(fh.read(), Loader=yaml.SafeLoader)
 
 DATA = {}
 for i in range(64):

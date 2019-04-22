@@ -4,6 +4,8 @@ This is one of my first forays into programming, so there are most likely loads 
 
 I got the idea when comparing macsec options on juniper/cisco routers where juniper don't have time-based SAK rekeys. The official recommendation is instead to keep the CKN/CAK rekeys short through hitless key rollover which in turn will rekey the SAK. But since no one want to manually send out new keys every other day I created this script. 
 
+That said, I'm assuming Juniper will implement a configuration knob which should make this script obsolete for the sake of SAK-rekeying. It'll still be useful for CKN/CAK though, but that could be at a much longer interval like every 4 weeks or so. 
+
 ---
 
 ### What it does

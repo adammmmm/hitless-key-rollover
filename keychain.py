@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 import random
@@ -106,5 +107,9 @@ for router in data['HOSTS']:
             conf.pdiff()
             conf.commit(comment="Updated keychain")
     except Exception as err:
-        print(f"PyEZ configuration exception {err}")
+        print(f"PyEZ configuration exception, {err}")
         sys.exit(1)
+try:
+    os.remove("temp.j2")
+except OSError as err:
+    print(f"Failed to delete temporary template, {err}")

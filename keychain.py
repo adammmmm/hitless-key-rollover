@@ -42,7 +42,7 @@ if data['ROLLINTERVAL'] <= 1:
     sys.exit(0)
 
 DATA = {}
-for i in range(64):
+for i in range(52):
     DATA["CKN" + str(i)] = generate_hex(64)
     DATA["CAK" + str(i)] = generate_hex(32)
     DATA["ROLL" + str(i)] = generate_time(i).strftime('%Y-%m-%d.%H:%M:%S')
@@ -95,7 +95,7 @@ else:
     sys.exit(1)
 
 with open('temp.j2', mode="w") as twr:
-    for i in range(64):
+    for i in range(52):
         if i == int(usedid[0]):
             continue
         twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {i} secret {{{{CAK{i}}}}}\n')

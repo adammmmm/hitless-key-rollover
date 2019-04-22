@@ -35,7 +35,7 @@ DATA = {}
 for i in range(64):
     DATA["CKN" + str(i)] = generate_hex(64)
     DATA["CAK" + str(i)] = generate_hex(32)
-    DATA["ROLL" + str(i)] = (datetime.now() + timedelta(hours=data['ROLLINTERVAL']) * (i+1)).strftime('%Y-%m-%d.%H:%M:%S')
+    DATA["ROLL" + str(i)] = (datetime.now() + timedelta(hours=data['ROLLINTERVAL']) + (timedelta(hours=data['ROLLINTERVAL'])*i).strftime('%Y-%m-%d.%H:%M:%S'))
 
 usedid = []
 

@@ -6,6 +6,20 @@ I got the idea when comparing macsec options on juniper/cisco routers where juni
 
 ---
 
+### What it does
+
+It will create a dictionary of 64 key ids. All with maximum CKN+CAK lengths of random hex strings. The start-time will be current time plus the ROLLINTERVAL. It'll then log in to all HOSTS and show the current key-chains and see if KEYCHAIN-NAME exists.
+
+After that some checks occur that the active send key and receive key are the same, that there are no next keys/times in the chain and appends the active key to a list.
+
+Then comes a check that we've got as many keys appended to the list as we have HOSTS after which we'll make sure every key is the same by making it a set instead of list.
+
+This information allows us to create the template jinja2 file populated with the 64 key id dict which will ignore the active key.
+
+Eventually, we connect to all devices again and commit the configuration with a comment that will let people know what's happened.
+
+---
+
 ### Instructions
 
 data.yml contains a couple variables you should change:
@@ -29,19 +43,3 @@ It currently needs to already be configured with one key for the script to work.
 And of course HOSTS should be all your routers ip-addresses.
 
 Add this to crontab and make it execute once every ROLLINTERVAL/2.
-
----
-
-### What it does
-
-It will create a dictionary of 64 key ids. All with maximum CKN+CAK lengths of random hex strings. The start-time will be current time plus the ROLLINTERVAL. It'll then log in to all HOSTS and show the current key-chains and see if KEYCHAIN-NAME exists.
-
-After that some checks occur that the active send key and receive key are the same, that there are no next keys/times in the chain and appends the active key to a list.
-
-Then comes a check that we've got as many keys appended to the list as we have HOSTS after which we'll make sure every key is the same by making it a set instead of list.
-
-This information allows us to create the template jinja2 file populated with the 64 key id dict which will ignore the active key.
-
-Eventually, we connect to all devices again and commit the configuration with a comment that will let people know what's happened.
-
-

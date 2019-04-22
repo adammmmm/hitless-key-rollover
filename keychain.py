@@ -24,9 +24,15 @@ lgr.addHandler(logfh)
 
 
 def generate_hex(self):
-    ''' Function to create hex string of passed length'''
+    ''' Helper function to create hex string of passed length'''
     rand = ''.join(random.SystemRandom().choice(string.hexdigits) for _ in range(self))
     return str.lower(rand)
+
+def generate_time(self):
+    ''' Helper function to calculate timedeltas '''
+    nexttime = datetime.now()+timedelta(hours=data['ROLLINTERVAL'])
+    addtime = nexttime+timedelta(hours=data['ROLLINTERVAL']) * self
+    return addtime
 
 with open("data.yml") as fh:
     data = yaml.load(fh.read(), Loader=yaml.SafeLoader)
@@ -35,7 +41,7 @@ DATA = {}
 for i in range(64):
     DATA["CKN" + str(i)] = generate_hex(64)
     DATA["CAK" + str(i)] = generate_hex(32)
-    DATA["ROLL" + str(i)] = (datetime.now() + timedelta(hours=data['ROLLINTERVAL']) + (timedelta(hours=data['ROLLINTERVAL'])*i).strftime('%Y-%m-%d.%H:%M:%S'))
+    DATA["ROLL" + str(i)] = generate_time(i).strftime('%Y-%m-%d.%H:%M:%S')
 
 usedid = []
 

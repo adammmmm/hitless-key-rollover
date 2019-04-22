@@ -30,8 +30,8 @@ def generate_hex(self):
 
 def generate_time(self):
     ''' Helper function to calculate timedeltas '''
-    nexttime = datetime.now()+timedelta(hours=data['ROLLINTERVAL'])
-    addtime = nexttime+timedelta(hours=data['ROLLINTERVAL']) * self
+    nexttime = datetime.now() + timedelta(hours=data['ROLLINTERVAL'])
+    addtime = nexttime + (timedelta(hours=data['ROLLINTERVAL']) * self)
     return addtime
 
 with open("data.yml") as fh:

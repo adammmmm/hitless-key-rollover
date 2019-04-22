@@ -1,6 +1,6 @@
-import os
 import json
 import logging
+import os
 import random
 import string
 import sys
@@ -105,7 +105,7 @@ for router in data['HOSTS']:
             conf = Config(dev)
             conf.load(template.render(DATA), format='set')
             conf.pdiff()
-            conf.commit(comment="Updated keychain")
+            conf.commit(comment=f"Updated {data['KEYCHAIN-NAME']} keychain")
     except Exception as err:
         print(f"PyEZ configuration exception, {err}")
         sys.exit(1)

@@ -37,6 +37,10 @@ def generate_time(self):
 with open("data.yml") as fh:
     data = yaml.load(fh.read(), Loader=yaml.SafeLoader)
 
+if data['ROLLINTERVAL'] <= 1:
+    print("Increase the ROLLINTERVAL in data.yml")
+    sys.exit(0)
+
 DATA = {}
 for i in range(64):
     DATA["CKN" + str(i)] = generate_hex(64)

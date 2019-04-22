@@ -2,9 +2,7 @@
 
 This is one of my first forays into programming, so there are most likely loads of "wrong" ways of doing what I'm doing.
 
-I got the idea when comparing macsec options on juniper/cisco routers where juniper don't have time-based SAK rekeys, the recommendation is instead to keep the CKN/CAK rekeys short, hence this script. 
-
-Don't want to manually send out new keys every other day.
+I got the idea when comparing macsec options on juniper/cisco routers where juniper don't have time-based SAK rekeys, the recommendation is instead to keep the CKN/CAK rekeys short through hitless key rollover which in turn will rekey the SAK, but since no one want to manually send out new keys every other day I created this script. 
 
 ---
 

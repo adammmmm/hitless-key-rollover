@@ -90,7 +90,7 @@ if len(usedid) == len(data['HOSTS']):
     if len(set(usedid)) == 1:
         print(f"All routers replied with the same key id: {usedid[0]}")
     else:
-        print("Router key id sync issue")
+        print(f"Router key id sync issue, got: {set(usedid)}")
         sys.exit(1)
 else:
     print(f"Only got a reply from {len(usedid)} out of {len(data['HOSTS'])} devices")

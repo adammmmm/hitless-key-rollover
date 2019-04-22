@@ -34,7 +34,7 @@ data.yml contains a couple variables you should change:
 
 - HOSTS
 
-Guessing they should be pretty self explanatory, USER/PASS will be the credentials for the ssh connection to the routers. ROLLINTERVAL is how often the keys will be rolled over in hours. KEYCHAIN-NAME is:
+Guessing they should be pretty self explanatory, USER/PASS will be the credentials for the ssh connection to the routers. ROLLINTERVAL is how often the keys will be rolled over in hours, 2 hours minimum. KEYCHAIN-NAME is:
 
 [ edit security authentication-key-chains key-chain **THIS** ]
 

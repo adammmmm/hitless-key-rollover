@@ -1,4 +1,4 @@
-### Hitless Key Rollover
+# Hitless Key Rollover
 
 This is one of my first forays into programming, so there are most likely loads of "wrong" ways of doing what I'm doing.
 
@@ -8,7 +8,7 @@ Don't want to manually send out new keys every other day.
 
 ---
 
-##### Instructions
+#### Instructions
 
 data.yml contains a couple variables you should change:
 
@@ -32,7 +32,7 @@ And of course HOSTS should be all your routers ip-addresses.
 
 ---
 
-##### What it does
+#### What it does
 
 It will create a dictionary of 64 key ids. All with maximum CKN+CAK lengths of random hex strings. The start-time will be current time plus the ROLLINTERVAL. It'll then log in to all HOSTS and show the current key-chains and see if KEYCHAIN-NAME exists.
 

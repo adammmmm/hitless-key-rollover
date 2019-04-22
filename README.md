@@ -42,4 +42,4 @@ It currently needs to already be configured with one key for the script to work.
 
 And of course HOSTS should be all your routers ip-addresses.
 
-Add this to crontab and make it execute once every ROLLINTERVAL/2.
+Add this to crontab and make it execute once every ROLLINTERVAL/2, that way there will at most be half a ROLLINTERVAL drift.

@@ -38,11 +38,13 @@ Guessing they should be pretty self explanatory, USER/PASS will be the credentia
 
 [ edit security authentication-key-chains key-chain **THIS** ]
 
-keychain.py currently needs to already be configured with at least one key to work.
+keychain.py currently needs the routers to already be configured with at least one key in their keychain to work.
 
 If you don't already have a keychain configured you can run init.py to create one from scratch, it ignores all the checks and just configures a keychain with key 0-51. 
 LOGGING should be **True** or **False**, if it's True keychain.log will have the clear-text values of every CKN/CAK value.
 
 And of course HOSTS should be all your routers ip-addresses.
 
-Add keychain.py to crontab and make it execute once every ROLLINTERVAL/2, that way there will at most be half a ROLLINTERVAL drift. **DO NOT USE INIT.PY IN CRON**
+Add keychain.py to crontab and make it execute once every ROLLINTERVAL/2, that way there will at most be half a ROLLINTERVAL drift.
+
+## DO NOT ADD init.py TO CRONTAB

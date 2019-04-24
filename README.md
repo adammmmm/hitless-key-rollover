@@ -25,6 +25,9 @@ Eventually, we connect to all devices again and commit the configuration with a 
 
 ### Instructions
 
+git clone
+pip install -r requirements.txt
+
 data.yml contains a couple variables you should change:
 
 - USER

@@ -49,7 +49,9 @@ LOGGING should be **True** or **False**, if it's True keychain.log will have the
 
 And of course HOSTS should be all your routers ip-addresses.
 
-Add keychain.py to crontab and make it execute once every ROLLINTERVAL/2, that way there will at most be half a ROLLINTERVAL drift.
+Add keychain.py to crontab and make it execute once every hour or so, here's an example.
+
+0 * * * * /path/to/python3 /path/to/keychain.py
 
 ---
 

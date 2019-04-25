@@ -89,7 +89,8 @@ if len(ntp) == len(data["HOSTS"]):
     print('NTP Configured on all hosts')
 else:
     print('NTP Not configured on all hosts')
-    sys.exit(1)
+    if data['NTP']:
+        sys.exit(1)
 
 if len(usedid) == len(data["HOSTS"]):
     if len(set(usedid)) == 1:

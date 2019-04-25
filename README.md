@@ -35,6 +35,7 @@ data.yml contains a couple variables you should change:
 - PASS
 - ROLLINTERVAL
 - KEYCHAIN-NAME
+- NTP
 - LOGGING
 - HOSTS
 
@@ -44,6 +45,7 @@ Guessing they should be pretty self explanatory, USER/PASS will be the credentia
 
 keychain.py currently needs the routers to already be configured with at least one key in their keychain to work.
 
+NTP is whether to exit or not if NTP is not configured on the routers. Set to False only for testing.
 
 LOGGING should be **True** or **False**, if it's True keychain.log will have the clear-text values of every CKN/CAK value.
 

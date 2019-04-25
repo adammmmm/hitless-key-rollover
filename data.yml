@@ -3,6 +3,7 @@ USER: root
 PASS: abc123
 ROLLINTERVAL: 8
 KEYCHAIN-NAME: macsec
+NTP: True
 LOGGING: False
 HOSTS:
   - 172.16.1.131

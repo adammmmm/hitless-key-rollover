@@ -49,11 +49,16 @@ for i in range(52):
     DATA["ROLL" + str(i)] = generate_time(i).strftime('%Y-%m-%d.%H:%M:%S')
 
 usedid = []
+ntp = []
 
 for router in data["HOSTS"]:
     print(f'Checking {router}')
     try:
         with Device(host=router, user=data["USER"], passwd=data["PASS"], port=22) as dev:
+            uptimeinfo = dev.rpc.get_system_uptime_information({"format" : "json"})
+            timesource = uptimeinfo["system-uptime-information"][0]["time-source"]
+            if timesource[0]["data"] == " NTP CLOCK ":
+                ntp.append('yes')
             dictdata = dev.rpc.get_hakr_keychain_information({"format" : "json"})
             if dictdata:
                 jsonedkeychain = dictdata["hakr-keychain-information"][0]["hakr-keychain"]
@@ -79,6 +84,12 @@ for router in data["HOSTS"]:
     except Exception as err:
         print(f'PyEZ checking exception, {err}')
         sys.exit(1)
+
+if len(ntp) == len(data["HOSTS"]):
+    print('NTP Configured on all hosts')
+else:
+    print('NTP Not configured on all hosts')
+    sys.exit(1)
 
 if len(usedid) == len(data["HOSTS"]):
     if len(set(usedid)) == 1:

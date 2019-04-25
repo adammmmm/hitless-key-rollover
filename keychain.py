@@ -57,7 +57,7 @@ for router in data["HOSTS"]:
         with Device(host=router, user=data["USER"], passwd=data["PASS"], port=22) as dev:
             uptimeinfo = dev.rpc.get_system_uptime_information({"format" : "json"})
             timesource = uptimeinfo["system-uptime-information"][0]["time-source"]
-            if timesource[0]["data"] == " NTP CLOCK ":
+            if timesource[0]["data"] == ' NTP CLOCK ':
                 ntp.append('yes')
             dictdata = dev.rpc.get_hakr_keychain_information({"format" : "json"})
             if dictdata:

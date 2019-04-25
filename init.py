@@ -12,7 +12,6 @@ import yaml
 from jinja2 import Template
 from jnpr.junos import Device
 from jnpr.junos.utils.config import Config
-from jnpr.junos.utils.start_shell import StartShell
 
 lgr = logging.getLogger('keychain')
 lgr.setLevel(logging.INFO)

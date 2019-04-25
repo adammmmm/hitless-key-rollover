@@ -12,7 +12,6 @@ import yaml
 from jinja2 import Template
 from jnpr.junos import Device
 from jnpr.junos.utils.config import Config
-from jnpr.junos.utils.start_shell import StartShell
 
 lgr = logging.getLogger('keychain')
 lgr.setLevel(logging.INFO)
@@ -55,14 +54,9 @@ for router in data['HOSTS']:
     print(f"Checking {router}")
     try:
         with Device(host=router, user=data['USER'], passwd=data['PASS'], port=22) as dev:
-            with StartShell(dev) as ss:
-                tupledata = ss.run('cli -c "show security keychain | display json | no-more"')
-                listdata = list(tupledata)
-                liststr = listdata[1]
-                # As shell mode shows both the command as first line and a prompt as last, both non-json, we need to remove them
-                nofirstorlastline = '\n'.join(liststr.split('\n')[1:-1])
-                jsoned = json.loads(nofirstorlastline)
-                jsonedkeychain = jsoned['hakr-keychain-information'][0]['hakr-keychain']
+            dictdata = dev.rpc.get_hakr_keychain_information({"format" : "json"})
+            if dictdata:
+                jsonedkeychain = dictdata['hakr-keychain-information'][0]['hakr-keychain']
                 for keyid in jsonedkeychain:
                     if keyid['hakr-keychain-name'][0]['data'] == data['KEYCHAIN-NAME']:
                         hkask = keyid['hakr-keychain-active-send-key'][0]['data']

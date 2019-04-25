@@ -11,15 +11,15 @@ That said, I'm assuming Juniper will implement a configuration knob which should
 
 ### What it does
 
-It will create a dictionary of 52 key ids. All with maximum CKN/CAK lengths of random hex strings. The start-time will be current time plus the ROLLINTERVAL. It'll then log in to all HOSTS and show the current key-chains and see if KEYCHAIN-NAME exists.
+It will create a dictionary of 52 key ids. All with maximum CKN/CAK lengths of random hex strings. The start-time will be current time plus the ROLLINTERVAL. It'll then log in to all HOSTS and show time source, the current key-chains and see if KEYCHAIN-NAME exists.
 
 After that some checks occur that NTP is active, the active send key and receive key are the same, that there are no next keys/times in the chain and appends the active key to a list.
 
 Then comes a check that we've got as many keys appended to the list as we have HOSTS after which we'll make sure every key is the same by making it a set instead of list.
 
-This information allows us to create the template jinja2 file populated with the 52 key id dict where the active key will be exempted.
+This information is then used to create a template j2 file populated with the 52 key id dictionary where the active key will be exempted.
 
-Eventually, we connect to all devices again and commit the configuration with a comment that will let people know what's happened.
+Eventually, it connects to all devices again and commit the configuration with a comment that will let people know what's happened.
 
 ---
 
@@ -39,7 +39,7 @@ data.yml contains a couple variables you should change:
 - LOGGING
 - HOSTS
 
-Guessing they should be pretty self explanatory, USER/PASS will be the credentials for the ssh connection to the routers. ROLLINTERVAL is how often the keys will be rolled over in hours, 2 hours minimum. KEYCHAIN-NAME is:
+USER/PASS will be the credentials for the ssh connection to the routers. ROLLINTERVAL is how often the keys will be rolled over in hours, 2 hours minimum. KEYCHAIN-NAME is:
 
 [ edit security authentication-key-chains key-chain **THIS** ]
 
@@ -49,7 +49,7 @@ NTP is whether to exit or not if NTP is not configured on the routers. Set to Fa
 
 LOGGING should be **True** or **False**, if it's True keychain.log will have the clear-text values of every CKN/CAK value.
 
-And of course HOSTS should be all your routers ip-addresses.
+HOSTS should be all your routers, one per line.
 
 Add keychain.py to crontab and make it execute once every hour or so, here's an example.
 

@@ -123,7 +123,7 @@ for router in data["HOSTS"]:
         with Device(host=router, user=data["USER"], passwd=data["PASS"], port=22) as dev:
             conf = Config(dev)
             conf.load(template.render(DATA), format='set')
-            conf.commit(comment=f'Updated {data["KEYCHAIN-NAME"]} keychain')
+            conf.commit(timeout=120, comment=f'Updated {data["KEYCHAIN-NAME"]} keychain')
     except Exception as err:
         print(f'PyEZ configuration exception, {err}')
         sys.exit(1)

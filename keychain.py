@@ -25,15 +25,15 @@ lgr.addHandler(logfh)
 
 
 def generate_hex(self):
-    ''' Helper function to create hex string of passed length'''
+    ''' Helper function to return a hex string of passed length'''
     rand = ''.join(random.SystemRandom().choice(string.hexdigits) for _ in range(self))
     return str.lower(rand)
 
 def generate_time(self):
-    ''' Helper function to calculate timedeltas '''
-    nexttime = datetime.now() + timedelta(hours=data["ROLLINTERVAL"])
-    addtime = nexttime + (timedelta(hours=data["ROLLINTERVAL"]) * self)
-    return addtime
+    ''' Helper function to return a timedeltas from passed id '''
+    next_time = datetime.now() + timedelta(hours=data["ROLLINTERVAL"])
+    add_time = next_time + (timedelta(hours=data["ROLLINTERVAL"])*self)
+    return add_time
 
 with open('data.yml') as fh:
     data = yaml.load(fh.read(), Loader=yaml.SafeLoader)
@@ -43,26 +43,26 @@ if data["ROLLINTERVAL"] <= 1:
     sys.exit(0)
 
 DATA = {}
-for i in range(52):
-    DATA["CKN" + str(i)] = generate_hex(64)
-    DATA["CAK" + str(i)] = generate_hex(32)
-    DATA["ROLL" + str(i)] = generate_time(i).strftime('%Y-%m-%d.%H:%M:%S')
+for index in range(52):
+    DATA["CKN" + str(index)] = generate_hex(64)
+    DATA["CAK" + str(index)] = generate_hex(32)
+    DATA["ROLL" + str(index)] = generate_time(index).strftime('%Y-%m-%d.%H:%M:%S')
 
-usedid = []
+used_id = []
 ntp = []
 
 for router in data["HOSTS"]:
     print(f'Checking {router}')
     try:
         with Device(host=router, user=data["USER"], passwd=data["PASS"], port=22) as dev:
-            uptimeinfo = dev.rpc.get_system_uptime_information({"format" : "json"})
-            timesource = uptimeinfo["system-uptime-information"][0]["time-source"]
+            uptime_info = dev.rpc.get_system_uptime_information({"format" : "json"})
+            timesource = uptime_info["system-uptime-information"][0]["time-source"]
             if timesource[0]["data"] == ' NTP CLOCK ':
                 ntp.append('yes')
-            dictdata = dev.rpc.get_hakr_keychain_information({"format" : "json"})
-            if dictdata:
-                jsonedkeychain = dictdata["hakr-keychain-information"][0]["hakr-keychain"]
-                for keyid in jsonedkeychain:
+            hakr_dict = dev.rpc.get_hakr_keychain_information({"format" : "json"})
+            if hakr_dict:
+                json_keychain = hakr_dict["hakr-keychain-information"][0]["hakr-keychain"]
+                for keyid in json_keychain:
                     if keyid["hakr-keychain-name"][0]["data"] == data["KEYCHAIN-NAME"]:
                         hkask = keyid["hakr-keychain-active-send-key"][0]["data"]
                         hkark = keyid["hakr-keychain-active-receive-key"][0]["data"]
@@ -71,7 +71,7 @@ for router in data["HOSTS"]:
                         hknkt = keyid["hakr-keychain-next-key-time"][0]["data"]
                         if hkask == hkark:
                             if hknsk and hknrk and hknkt == 'None':
-                                usedid.append(hkask)
+                                used_id.append(hkask)
                             else:
                                 print(f'Next send key {hknsk}, next receive key {hknrk}, rolling over in {hknkt}')
                                 sys.exit(0)
@@ -92,23 +92,23 @@ else:
     if data['NTP']:
         sys.exit(1)
 
-if len(usedid) == len(data["HOSTS"]):
-    if len(set(usedid)) == 1:
-        print(f'All routers replied with the same key id: {usedid[0]}')
+if len(used_id) == len(data["HOSTS"]):
+    if len(set(used_id)) == 1:
+        print(f'All routers replied with the same key id: {used_id[0]}')
     else:
-        print(f'Router key id sync issue, got: {set(usedid)}')
+        print(f'Router key id sync issue, got: {set(used_id)}')
         sys.exit(1)
 else:
-    print(f'Only got a reply from {len(usedid)} out of {len(data["HOSTS"])} devices')
+    print(f'Only got a reply from {len(used_id)} out of {len(data["HOSTS"])} devices')
     sys.exit(1)
 
 with open('temp.j2', mode='w') as twr:
-    for i in range(52):
-        if i == int(usedid[0]):
+    for index in range(52):
+        if index == int(used_id[0]):
             continue
-        twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {i} secret {{{{CAK{i}}}}}\n')
-        twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {i} key-name {{{{CKN{i}}}}}\n')
-        twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {i} start-time "{{{{ROLL{i}}}}}"\n')
+        twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')
+        twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} key-name {{{{CKN{index}}}}}\n')
+        twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} start-time "{{{{ROLL{index}}}}}"\n')
 
 with open('temp.j2') as t_fh:
     t_format = t_fh.read()

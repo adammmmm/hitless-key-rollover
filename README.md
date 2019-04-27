@@ -43,7 +43,7 @@ data.yml contains a couple variables you should change:
 USER/PASS will be the credentials for the ssh connection to the routers. ROLLINTERVAL is how often the keys will be rolled over in hours, 2 hours minimum. KEYCHAIN-NAME is:
 
 ```
-[ edit security authentication-key-chains key-chain **KEYCHAIN-NAME** ]
+[ edit security authentication-key-chains key-chain KEYCHAIN-NAME ]
 ```
 
 keychain.py currently needs the routers to already be configured with at least one key in their keychain to work.

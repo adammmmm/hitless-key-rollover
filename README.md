@@ -25,9 +25,10 @@ Eventually, it connects to all devices again and commit the configuration with a
 
 ### Instructions
 
+```
 git clone
-
 pip install -r requirements.txt
+```
 
 data.yml contains a couple variables you should change:
 
@@ -41,7 +42,9 @@ data.yml contains a couple variables you should change:
 
 USER/PASS will be the credentials for the ssh connection to the routers. ROLLINTERVAL is how often the keys will be rolled over in hours, 2 hours minimum. KEYCHAIN-NAME is:
 
+```
 [ edit security authentication-key-chains key-chain **KEYCHAIN-NAME** ]
+```
 
 keychain.py currently needs the routers to already be configured with at least one key in their keychain to work.
 
@@ -53,7 +56,9 @@ HOSTS should be all your routers, one per line.
 
 Add keychain.py to crontab and make it execute once every hour or so, here's an example.
 
+```
 0 * * * * /path/to/python3 /path/to/keychain.py
+```
 
 ---
 

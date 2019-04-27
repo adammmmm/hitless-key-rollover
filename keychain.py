@@ -103,8 +103,11 @@ else:
     sys.exit(1)
 
 with open('temp.j2', mode='w') as twr:
-    for index in range(52):
-        if index == int(used_id[0]):
+    for index in range(51):
+        if index >= int(used_id[0]):
+            twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index+1} secret {{{{CAK{index}}}}}\n')
+            twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index+1} key-name {{{{CAK{index}}}}}\n')
+            twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index+1} start-time "{{{{ROLL{index}}}}}"\n')
             continue
         twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')
         twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} key-name {{{{CKN{index}}}}}\n')

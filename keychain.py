@@ -56,19 +56,19 @@ for router in data["HOSTS"]:
     try:
         with Device(host=router, user=data["USER"], passwd=data["PASS"], port=22) as dev:
             uptime_info = dev.rpc.get_system_uptime_information({"format" : "json"})
-            timesource = uptime_info["system-uptime-information"][0]["time-source"]
-            if timesource[0]["data"] == ' NTP CLOCK ':
+            time_source = uptime_info["system-uptime-information"][0]["time-source"]
+            if time_source[0]["data"] == ' NTP CLOCK ':
                 ntp.append('yes')
             hakr_dict = dev.rpc.get_hakr_keychain_information({"format" : "json"})
             if hakr_dict:
                 json_keychain = hakr_dict["hakr-keychain-information"][0]["hakr-keychain"]
-                for keyid in json_keychain:
-                    if keyid["hakr-keychain-name"][0]["data"] == data["KEYCHAIN-NAME"]:
-                        hkask = keyid["hakr-keychain-active-send-key"][0]["data"]
-                        hkark = keyid["hakr-keychain-active-receive-key"][0]["data"]
-                        hknsk = keyid["hakr-keychain-next-send-key"][0]["data"]
-                        hknrk = keyid["hakr-keychain-next-receive-key"][0]["data"]
-                        hknkt = keyid["hakr-keychain-next-key-time"][0]["data"]
+                for key_id in json_keychain:
+                    if key_id["hakr-keychain-name"][0]["data"] == data["KEYCHAIN-NAME"]:
+                        hkask = key_id["hakr-keychain-active-send-key"][0]["data"]
+                        hkark = key_id["hakr-keychain-active-receive-key"][0]["data"]
+                        hknsk = key_id["hakr-keychain-next-send-key"][0]["data"]
+                        hknrk = key_id["hakr-keychain-next-receive-key"][0]["data"]
+                        hknkt = key_id["hakr-keychain-next-key-time"][0]["data"]
                         if hkask == hkark:
                             if hknsk and hknrk and hknkt == 'None':
                                 used_id.append(hkask)

@@ -30,7 +30,7 @@ def generate_hex(self):
     return str.lower(rand)
 
 def generate_time(self):
-    ''' Helper function to return a timedeltas from passed id '''
+    ''' Helper function to return timedeltas from passed id '''
     next_time = datetime.now() + timedelta(hours=data["ROLLINTERVAL"])
     add_time = next_time + (timedelta(hours=data["ROLLINTERVAL"])*self)
     return add_time

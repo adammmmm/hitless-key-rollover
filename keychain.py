@@ -61,26 +61,23 @@ for router in data["HOSTS"]:
                 ntp.append('yes')
             hakr_dict = dev.rpc.get_hakr_keychain_information({"format" : "json"})
             if hakr_dict:
-                json_keychain = hakr_dict["hakr-keychain-information"][0]["hakr-keychain"]
-                for key_id in json_keychain:
-                    if key_id["hakr-keychain-name"][0]["data"] == data["KEYCHAIN-NAME"]:
-                        hkask = key_id["hakr-keychain-active-send-key"][0]["data"]
-                        hkark = key_id["hakr-keychain-active-receive-key"][0]["data"]
-                        hknsk = key_id["hakr-keychain-next-send-key"][0]["data"]
-                        hknrk = key_id["hakr-keychain-next-receive-key"][0]["data"]
-                        hknkt = key_id["hakr-keychain-next-key-time"][0]["data"]
-                        if hkask == hkark:
-                            if hknsk and hknrk and hknkt == 'None':
-                                used_id.append(hkask)
+                for keychains in hakr_dict["hakr-keychain-information"]:
+                    for key_id in keychains["hakr-keychain"]:
+                        if key_id["hakr-keychain-name"][0]["data"] == data["KEYCHAIN-NAME"]:
+                            hkask = key_id["hakr-keychain-active-send-key"][0]["data"]
+                            hkark = key_id["hakr-keychain-active-receive-key"][0]["data"]
+                            hknsk = key_id["hakr-keychain-next-send-key"][0]["data"]
+                            hknrk = key_id["hakr-keychain-next-receive-key"][0]["data"]
+                            hknkt = key_id["hakr-keychain-next-key-time"][0]["data"]
+                            if hkask == hkark:
+                                if hknsk and hknrk and hknkt == 'None':
+                                    used_id.append(hkask)
+                                else:
+                                    print(f'Next send key {hknsk}, next receive key {hknrk}, rolling over in {hknkt}')
+                                    sys.exit(0)
                             else:
-                                print(f'Next send key {hknsk}, next receive key {hknrk}, rolling over in {hknkt}')
-                                sys.exit(0)
-                        else:
-                            print(f'Send key: {hkask}, Receive key: {hkark}')
-                            sys.exit(1)
-                    else:
-                        print(f'Keychain {data["KEYCHAIN-NAME"]} not found')
-                        sys.exit(1)
+                                print(f'Send key: {hkask}, Receive key: {hkark}')
+                                sys.exit(1)
     except Exception as err:
         print(f'PyEZ checking exception, {err}')
         sys.exit(1)

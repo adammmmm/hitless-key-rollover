@@ -78,15 +78,11 @@ for router in data["HOSTS"]:
                             else:
                                 print(f'Send key: {hkask}, Receive key: {hkark}')
                                 sys.exit(1)
-    except Exception as err:
-        print(f'PyEZ checking exception, {err}')
+    except KeyError:
+        print(f'PyEZ checking exception, a keychain is not configured, try init.py')
         sys.exit(1)
-
-if len(ntp) == len(data["HOSTS"]):
-    print('NTP Configured on all hosts')
-else:
-    print('NTP Not configured on all hosts')
-    if data['NTP']:
+    except Exception as exc:
+        print(f'PyEZ checking exception, {exc}')
         sys.exit(1)
 
 if len(used_id) == len(data["HOSTS"]):
@@ -96,8 +92,15 @@ if len(used_id) == len(data["HOSTS"]):
         print(f'Router key id sync issue, got: {set(used_id)}')
         sys.exit(1)
 else:
-    print(f'Only got a reply from {len(used_id)} out of {len(data["HOSTS"])} devices')
+    print(f'Only got an id from {len(used_id)} out of {len(data["HOSTS"])} devices, make sure KEYCHAIN-NAME is correct.')
     sys.exit(1)
+
+if len(ntp) == len(data["HOSTS"]):
+    print('NTP Configured on all hosts')
+else:
+    print('NTP Not configured on all hosts')
+    if data['NTP']:
+        sys.exit(1)
 
 with open('temp.j2', mode='w') as twr:
     for index in range(51):
@@ -124,10 +127,10 @@ for router in data["HOSTS"]:
             conf = Config(dev)
             conf.load(template.render(DATA), format='set')
             conf.commit(timeout=120, comment=f'Updated {data["KEYCHAIN-NAME"]} keychain')
-    except Exception as err:
-        print(f'PyEZ configuration exception, {err}')
+    except Exception as exc:
+        print(f'PyEZ configuration exception, {exc}')
         sys.exit(1)
 try:
     os.remove('temp.j2')
-except OSError as err:
-    print(f'Failed to delete temporary template, {err}')
+except OSError as exc:
+    print(f'Failed to delete temporary template, {exc}')

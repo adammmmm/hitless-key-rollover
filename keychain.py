@@ -27,10 +27,19 @@ DATA = {}
 used_id = []
 ntp = []
 
+
+def create_keychain_dict():
+    for index in range(52):
+        DATA["CKN" + str(index)] = generate_hex(64)
+        DATA["CAK" + str(index)] = generate_hex(32)
+        DATA["ROLL" + str(index)] = generate_time(index).strftime('%Y-%m-%d.%H:%M:%S')
+
+
 def generate_hex(self):
     ''' Helper function to return a hex string of passed length'''
     rand = ''.join(random.SystemRandom().choice(string.hexdigits) for _ in range(self))
     return str.lower(rand)
+
 
 def generate_time(self):
     ''' Helper function to return timedeltas from passed id '''
@@ -38,17 +47,25 @@ def generate_time(self):
     add_time = next_time + (timedelta(hours=data["ROLLINTERVAL"])*self)
     return add_time
 
+
+def remove_template():
+    try:
+        os.remove('temp.j2')
+    except OSError as exc:
+        print(f'Failed to delete temporary template, {exc}')
+
+
 def check_keychain():
     ''' Sanity checks and needed information for updating the keychain '''
     for router in data["HOSTS"]:
         print(f'Checking {router}')
         try:
             with Device(host=router, user=data["USER"], passwd=data["PASS"], port=22) as dev:
-                uptime_info = dev.rpc.get_system_uptime_information({"format" : "json"})
+                uptime_info = dev.rpc.get_system_uptime_information({"format": "json"})
                 time_source = uptime_info["system-uptime-information"][0]["time-source"]
                 if time_source[0]["data"] == ' NTP CLOCK ':
                     ntp.append('yes')
-                hakr_dict = dev.rpc.get_hakr_keychain_information({"format" : "json"})
+                hakr_dict = dev.rpc.get_hakr_keychain_information({"format": "json"})
                 if hakr_dict:
                     for keychains in hakr_dict["hakr-keychain-information"]:
                         for key_id in keychains["hakr-keychain"]:
@@ -91,14 +108,10 @@ def check_keychain():
         if data['NTP']:
             sys.exit(1)
 
+
 def create_keychain():
     ''' Create the keychain without any previous checks or input '''
-    for index in range(52):
-        DATA["CKN" + str(index)] = generate_hex(64)
-        DATA["CAK" + str(index)] = generate_hex(32)
-        DATA["ROLL" + str(index)] = generate_time(index).strftime('%Y-%m-%d.%H:%M:%S')
-
-    with open('temp.j2', mode="w") as twr:
+    with open('temp.j2', mode='w') as twr:
         for index in range(51):
             twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')
             twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} key-name {{{{CKN{index}}}}}\n')
@@ -109,7 +122,7 @@ def create_keychain():
 
     template = Template(t_format)
 
-    if data['LOGGING']:
+    if data["LOGGING"]:
         lgr.info(template.render(DATA))
 
     for router in data["HOSTS"]:
@@ -123,18 +136,9 @@ def create_keychain():
             print(f'PyEZ configuration exception, {exc}')
             sys.exit(1)
 
-    try:
-        os.remove('temp.j2')
-    except OSError as exc:
-        print(f'Failed to delete temporary template, {exc}')
-                
+
 def update_keychain():
     ''' Update the keychain with information from the checks '''
-    for index in range(52):
-        DATA["CKN" + str(index)] = generate_hex(64)
-        DATA["CAK" + str(index)] = generate_hex(32)
-        DATA["ROLL" + str(index)] = generate_time(index).strftime('%Y-%m-%d.%H:%M:%S')
-
     with open('temp.j2', mode='w') as twr:
         for index in range(51):
             if index >= int(used_id[0]):
@@ -164,11 +168,6 @@ def update_keychain():
         except Exception as exc:
             print(f'PyEZ configuration exception, {exc}')
             sys.exit(1)
-    
-    try:
-        os.remove('temp.j2')
-    except OSError as exc:
-        print(f'Failed to delete temporary template, {exc}')
 
 
 if __name__ == '__main__':
@@ -181,9 +180,13 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 2:
         if sys.argv[1] == 'init':
+            create_keychain_dict()
             create_keychain()
+            remove_template()
         else:
             print('Use no arguments to update the keychain or "init" to create an initial keychain')
     else:
         check_keychain()
+        create_keychain_dict()
         update_keychain()
+        remove_template()

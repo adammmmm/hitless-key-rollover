@@ -46,7 +46,7 @@ USER/PASS will be the credentials for the ssh connection to the routers. ROLLINT
 [ edit security authentication-key-chains key-chain KEYCHAIN-NAME ]
 ```
 
-keychain.py currently needs the routers to already be configured with at least one key in their keychain to work.
+Running keychain.py without arguments needs the routers to already be configured with at least one key in their keychain to work.
 
 NTP is whether to exit or not if NTP is not configured on the routers. Set to False only for testing.
 
@@ -62,5 +62,5 @@ Add keychain.py to crontab and make it execute once every hour or so, here's an 
 
 ---
 
-If you don't already have a keychain configured you can run init.py to create one from scratch, it ignores all the checks and just configures a keychain with key 0-51. 
-## DO NOT ADD init.py TO CRONTAB
+If you don't already have a keychain configured you can run "keychain.py init" to create one from scratch, it ignores all the checks and just creates a keychain with key 0-51. 
+## DO NOT USE THE init ARGUMENT IN CRONTAB

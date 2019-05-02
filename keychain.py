@@ -105,7 +105,7 @@ def check_keychain():
         print('NTP Configured on all hosts')
     else:
         print('NTP Not configured on all hosts')
-        if data['NTP']:
+        if data["NTP"]:
             sys.exit(1)
 
 

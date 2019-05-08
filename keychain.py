@@ -85,7 +85,7 @@ def check_keychain():
                                     print(f'Send key: {hkask}, Receive key: {hkark}')
                                     sys.exit(1)
         except KeyError:
-            print(f'PyEZ checking exception, a keychain is not configured, try init.py')
+            print('PyEZ checking exception, a keychain is not configured, try init.py')
             sys.exit(1)
         except Exception as exc:
             print(f'PyEZ checking exception, {exc}')

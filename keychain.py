@@ -4,7 +4,6 @@ import json
 import logging
 import os
 import random
-import string
 import sys
 from datetime import datetime, timedelta
 
@@ -23,6 +22,7 @@ frmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logfh.setFormatter(frmt)
 lgr.addHandler(logfh)
 
+HEX = '0123456789abcdef'
 DATA = {}
 used_id = []
 ntp = []
@@ -37,8 +37,8 @@ def create_keychain_dict():
 
 def generate_hex(self):
     ''' Helper function to return a hex string of passed length'''
-    rand = ''.join(random.SystemRandom().choice(string.hexdigits) for _ in range(self))
-    return str.lower(rand)
+    rand = ''.join(random.SystemRandom().choice(HEX) for _ in range(self))
+    return str(rand)
 
 
 def generate_time(self):

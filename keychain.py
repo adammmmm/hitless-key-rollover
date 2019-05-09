@@ -38,7 +38,7 @@ def create_keychain_dict():
 def generate_hex(self):
     ''' Helper function to return a hex string of passed length'''
     rand = ''.join(random.SystemRandom().choice(HEX) for _ in range(self))
-    return str(rand)
+    return rand
 
 
 def generate_time(self):

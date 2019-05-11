@@ -22,16 +22,16 @@ logfh.setFormatter(frmt)
 lgr.addHandler(logfh)
 
 HEX = '0123456789abcdef'
-DATA = {}
+keychain_data = {}
 used_id = []
 ntp = []
 
 
 def create_keychain_dict():
     for index in range(52):
-        DATA["CKN" + str(index)] = generate_hex(64)
-        DATA["CAK" + str(index)] = generate_hex(32)
-        DATA["ROLL" + str(index)] = generate_time(index).strftime('%Y-%m-%d.%H:%M:%S')
+        keychain_data["CKN" + str(index)] = generate_hex(64)
+        keychain_data["CAK" + str(index)] = generate_hex(32)
+        keychain_data["ROLL" + str(index)] = generate_time(index).strftime('%Y-%m-%d.%H:%M:%S')
 
 
 def generate_hex(self):
@@ -42,8 +42,8 @@ def generate_hex(self):
 
 def generate_time(self):
     """ Helper function to return timedeltas from passed id """
-    next_time = datetime.now() + timedelta(hours=data["ROLLINTERVAL"])
-    add_time = next_time + (timedelta(hours=data["ROLLINTERVAL"])*self)
+    next_time = datetime.now() + timedelta(hours=config_data["ROLLINTERVAL"])
+    add_time = next_time + (timedelta(hours=config_data["ROLLINTERVAL"])*self)
     return add_time
 
 
@@ -56,10 +56,10 @@ def remove_template():
 
 def check_keychain():
     """ Sanity checks and needed information for updating the keychain """
-    for router in data["HOSTS"]:
+    for router in config_data["HOSTS"]:
         print(f'Checking {router}')
         try:
-            with Device(host=router, user=data["USER"], passwd=data["PASS"], port=22) as dev:
+            with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
                 uptime_info = dev.rpc.get_system_uptime_information({"format": "json"})
                 time_source = uptime_info["system-uptime-information"][0]["time-source"]
                 if time_source[0]["data"] == ' NTP CLOCK ':
@@ -68,7 +68,7 @@ def check_keychain():
                 if hakr_dict:
                     for keychains in hakr_dict["hakr-keychain-information"]:
                         for key_id in keychains["hakr-keychain"]:
-                            if key_id["hakr-keychain-name"][0]["data"] == data["KEYCHAIN-NAME"]:
+                            if key_id["hakr-keychain-name"][0]["data"] == config_data["KEYCHAIN-NAME"]:
                                 hkask = key_id["hakr-keychain-active-send-key"][0]["data"]
                                 hkark = key_id["hakr-keychain-active-receive-key"][0]["data"]
                                 hknsk = key_id["hakr-keychain-next-send-key"][0]["data"]
@@ -90,21 +90,21 @@ def check_keychain():
             print(f'PyEZ checking exception, {exc}')
             sys.exit(1)
 
-    if len(used_id) == len(data["HOSTS"]):
+    if len(used_id) == len(config_data["HOSTS"]):
         if len(set(used_id)) == 1:
             print(f'All routers replied with the same key id: {used_id[0]}')
         else:
             print(f'Router key id sync issue, got: {set(used_id)}')
             sys.exit(1)
     else:
-        print(f'Only got an id from {len(used_id)} out of {len(data["HOSTS"])} devices, make sure KEYCHAIN-NAME is correct.')
+        print(f'Only got an id from {len(used_id)} out of {len(config_data["HOSTS"])} devices, make sure KEYCHAIN-NAME is correct.')
         sys.exit(1)
 
-    if len(ntp) == len(data["HOSTS"]):
+    if len(ntp) == len(config_data["HOSTS"]):
         print('NTP Configured on all hosts')
     else:
         print('NTP Not configured on all hosts')
-        if data["NTP"]:
+        if config_data["NTP"]:
             sys.exit(1)
 
 
@@ -112,25 +112,25 @@ def create_keychain():
     ''' Create the keychain without any previous checks or input '''
     with open('temp.j2', mode='w') as twr:
         for index in range(51):
-            twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')
-            twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} key-name {{{{CKN{index}}}}}\n')
-            twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} start-time "{{{{ROLL{index}}}}}"\n')
+            twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')
+            twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} key-name {{{{CKN{index}}}}}\n')
+            twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} start-time "{{{{ROLL{index}}}}}"\n')
 
     with open('temp.j2') as t_fh:
         t_format = t_fh.read()
 
     template = Template(t_format)
 
-    if data["LOGGING"]:
-        lgr.info(template.render(DATA))
+    if config_data["LOGGING"]:
+        lgr.info(template.render(keychain_data))
 
-    for router in data["HOSTS"]:
+    for router in config_data["HOSTS"]:
         print(f'Configuring {router}')
         try:
-            with Device(host=router, user=data["USER"], passwd=data["PASS"], port=22) as dev:
+            with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
                 conf = Config(dev)
-                conf.load(template.render(DATA), format='set')
-                conf.commit(timeout=120, comment=f'Created {data["KEYCHAIN-NAME"]} keychain')
+                conf.load(template.render(keychain_data), format='set')
+                conf.commit(timeout=120, comment=f'Created {config_data["KEYCHAIN-NAME"]} keychain')
         except Exception as exc:
             print(f'PyEZ configuration exception, {exc}')
             sys.exit(1)
@@ -141,29 +141,29 @@ def update_keychain():
     with open('temp.j2', mode='w') as twr:
         for index in range(51):
             if index >= int(used_id[0]):
-                twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index+1} secret {{{{CAK{index}}}}}\n')
-                twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index+1} key-name {{{{CKN{index}}}}}\n')
-                twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index+1} start-time "{{{{ROLL{index}}}}}"\n')
+                twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index+1} secret {{{{CAK{index}}}}}\n')
+                twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index+1} key-name {{{{CKN{index}}}}}\n')
+                twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index+1} start-time "{{{{ROLL{index}}}}}"\n')
                 continue
-            twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')
-            twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} key-name {{{{CKN{index}}}}}\n')
-            twr.write(f'set security authentication-key-chains key-chain {data["KEYCHAIN-NAME"]} key {index} start-time "{{{{ROLL{index}}}}}"\n')
+            twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')
+            twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} key-name {{{{CKN{index}}}}}\n')
+            twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} start-time "{{{{ROLL{index}}}}}"\n')
 
     with open('temp.j2') as t_fh:
         t_format = t_fh.read()
 
     template = Template(t_format)
 
-    if data["LOGGING"]:
-        lgr.info(template.render(DATA))
+    if config_data["LOGGING"]:
+        lgr.info(template.render(keychain_data))
 
-    for router in data["HOSTS"]:
+    for router in config_data["HOSTS"]:
         print(f'Configuring {router}')
         try:
-            with Device(host=router, user=data["USER"], passwd=data["PASS"], port=22) as dev:
+            with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
                 conf = Config(dev)
-                conf.load(template.render(DATA), format='set')
-                conf.commit(timeout=120, comment=f'Updated {data["KEYCHAIN-NAME"]} keychain')
+                conf.load(template.render(keychain_data), format='set')
+                conf.commit(timeout=120, comment=f'Updated {config_data["KEYCHAIN-NAME"]} keychain')
         except Exception as exc:
             print(f'PyEZ configuration exception, {exc}')
             sys.exit(1)
@@ -171,9 +171,9 @@ def update_keychain():
 
 if __name__ == '__main__':
     with open('data.yml') as fh:
-        data = yaml.load(fh.read(), Loader=yaml.SafeLoader)
+        config_data = yaml.load(fh.read(), Loader=yaml.SafeLoader)
 
-    if data["ROLLINTERVAL"] <= 1:
+    if config_data["ROLLINTERVAL"] <= 1:
         print('Increase the ROLLINTERVAL in data.yml')
         sys.exit(0)
 

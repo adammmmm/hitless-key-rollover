@@ -28,6 +28,7 @@ ntp = []
 
 
 def create_keychain_dict():
+    """ Fills the dictionary with CAK/CKN/ROLL values """
     for index in range(52):
         keychain_data["CKN" + str(index)] = generate_hex(64)
         keychain_data["CAK" + str(index)] = generate_hex(32)
@@ -48,6 +49,7 @@ def generate_time(self):
 
 
 def remove_template():
+    """ Removes the template file """
     try:
         os.remove('temp.j2')
     except OSError as exc:
@@ -109,7 +111,7 @@ def check_keychain():
 
 
 def create_keychain():
-    ''' Create the keychain without any previous checks or input '''
+    """ Create the keychain without any previous checks or input """
     with open('temp.j2', mode='w') as twr:
         for index in range(51):
             twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')

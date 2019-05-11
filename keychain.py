@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import json
 import logging
 import os
 import random
@@ -36,13 +35,13 @@ def create_keychain_dict():
 
 
 def generate_hex(self):
-    ''' Helper function to return a hex string of passed length'''
+    """ Helper function to return a hex string of passed length """
     rand = ''.join(random.SystemRandom().choice(HEX) for _ in range(self))
     return rand
 
 
 def generate_time(self):
-    ''' Helper function to return timedeltas from passed id '''
+    """ Helper function to return timedeltas from passed id """
     next_time = datetime.now() + timedelta(hours=data["ROLLINTERVAL"])
     add_time = next_time + (timedelta(hours=data["ROLLINTERVAL"])*self)
     return add_time
@@ -56,7 +55,7 @@ def remove_template():
 
 
 def check_keychain():
-    ''' Sanity checks and needed information for updating the keychain '''
+    """ Sanity checks and needed information for updating the keychain """
     for router in data["HOSTS"]:
         print(f'Checking {router}')
         try:
@@ -138,7 +137,7 @@ def create_keychain():
 
 
 def update_keychain():
-    ''' Update the keychain with information from the checks '''
+    """ Update the keychain with information from the checks """
     with open('temp.j2', mode='w') as twr:
         for index in range(51):
             if index >= int(used_id[0]):

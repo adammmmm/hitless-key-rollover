@@ -87,17 +87,17 @@ def check_keychain():
                                     sys.exit(1)
         except KeyError:
             print('PyEZ checking exception, a keychain is not configured, try init.py')
-            sys.exit(1)
+            sys.exit(2)
         except Exception as exc:
             print(f'PyEZ checking exception, {exc}')
-            sys.exit(1)
+            sys.exit(2)
 
     if len(used_id) == len(config_data["HOSTS"]):
         if len(set(used_id)) == 1:
             print(f'All routers replied with the same key id: {used_id[0]}')
         else:
             print(f'Router key id sync issue, got: {set(used_id)}')
-            sys.exit(1)
+            sys.exit(2)
     else:
         print(f'Only got an id from {len(used_id)} out of {len(config_data["HOSTS"])} devices, make sure KEYCHAIN-NAME is correct.')
         sys.exit(1)
@@ -135,7 +135,7 @@ def create_keychain():
                 conf.commit(timeout=120, comment=f'Created {config_data["KEYCHAIN-NAME"]} keychain')
         except Exception as exc:
             print(f'PyEZ configuration exception, {exc}')
-            sys.exit(1)
+            sys.exit(2)
 
 
 def update_keychain():
@@ -168,7 +168,7 @@ def update_keychain():
                 conf.commit(timeout=120, comment=f'Updated {config_data["KEYCHAIN-NAME"]} keychain')
         except Exception as exc:
             print(f'PyEZ configuration exception, {exc}')
-            sys.exit(1)
+            sys.exit(2)
 
 
 if __name__ == '__main__':
@@ -177,7 +177,7 @@ if __name__ == '__main__':
 
     if config_data["ROLLINTERVAL"] <= 1:
         print('Increase the ROLLINTERVAL in data.yml')
-        sys.exit(0)
+        sys.exit(1)
 
     if len(sys.argv) == 2:
         if sys.argv[1] == 'init':

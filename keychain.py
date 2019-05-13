@@ -23,6 +23,7 @@ lgr.addHandler(logfh)
 
 HEX = '0123456789abcdef'
 keychain_data = {}
+keychain_set = set()
 used_id = []
 ntp = []
 
@@ -33,6 +34,16 @@ def create_keychain_dict():
         keychain_data["CKN" + str(index)] = generate_hex(64)
         keychain_data["CAK" + str(index)] = generate_hex(32)
         keychain_data["ROLL" + str(index)] = generate_time(index).strftime('%Y-%m-%d.%H:%M:%S')
+
+
+def check_for_duplicates():
+    """ Checks for duplicate CKN/CAK values """
+    for entries in keychain_data.values():
+        keychain_set.add(entries)
+    
+    if len(keychain_data) != len(keychain_set):
+        print('Duplicate CAK/CKN value, aborting')
+        sys.exit(1)
 
 
 def generate_hex(self):
@@ -107,6 +118,7 @@ def check_keychain():
     else:
         print('NTP Not configured on all hosts')
         if config_data["NTP"]:
+            print('Aborting')
             sys.exit(1)
 
 
@@ -182,6 +194,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         if sys.argv[1] == 'init':
             create_keychain_dict()
+            check_for_duplicates()
             create_keychain()
             remove_template()
         else:
@@ -189,5 +202,6 @@ if __name__ == '__main__':
     else:
         check_keychain()
         create_keychain_dict()
+        check_for_duplicates()
         update_keychain()
         remove_template()

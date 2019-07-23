@@ -45,16 +45,16 @@ def check_for_duplicates():
         sys.exit(1)
 
 
-def generate_hex(self):
+def generate_hex(length):
     """ Helper function to return a hex string of passed length """
-    rand = ''.join(random.SystemRandom().choice(HEX) for _ in range(self))
+    rand = ''.join(random.SystemRandom().choice(HEX) for _ in range(length))
     return rand
 
 
-def generate_time(self):
+def generate_time(index):
     """ Helper function to return timedeltas from passed id """
     next_time = datetime.now() + timedelta(hours=config_data["ROLLINTERVAL"])
-    add_time = next_time + (timedelta(hours=config_data["ROLLINTERVAL"]) * self)
+    add_time = next_time + (timedelta(hours=config_data["ROLLINTERVAL"]) * index)
     return add_time
 
 
@@ -96,7 +96,7 @@ def check_keychain():
                                     print(f'Send key: {hkask}, Receive key: {hkark}')
                                     sys.exit(1)
         except KeyError:
-            print('PyEZ checking exception, a keychain is not configured, try init.py')
+            print('PyEZ checking exception, a keychain is not configured, try init')
             sys.exit(2)
         except Exception as exc:
             print(f'PyEZ checking exception, {exc}')

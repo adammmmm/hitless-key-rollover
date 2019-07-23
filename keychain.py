@@ -40,7 +40,6 @@ def check_for_duplicates():
     """ Checks for duplicate CKN/CAK values """
     for entries in keychain_data.values():
         keychain_set.add(entries)
-    
     if len(keychain_data) != len(keychain_set):
         print('Duplicate CAK/CKN value, aborting')
         sys.exit(1)
@@ -55,7 +54,7 @@ def generate_hex(self):
 def generate_time(self):
     """ Helper function to return timedeltas from passed id """
     next_time = datetime.now() + timedelta(hours=config_data["ROLLINTERVAL"])
-    add_time = next_time + (timedelta(hours=config_data["ROLLINTERVAL"])*self)
+    add_time = next_time + (timedelta(hours=config_data["ROLLINTERVAL"]) * self)
     return add_time
 
 

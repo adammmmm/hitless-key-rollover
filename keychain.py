@@ -33,7 +33,7 @@ def create_keychain_dict():
     """ Fills the dictionary with CAK/CKN/ROLL values """
     for index in range(52):
         keychain_data["CKN" + str(index)] = generate_hex(64)
-        keychain_data["CAK" + str(index)] = generate_hex(32)
+        keychain_data["CAK" + str(index)] = generate_hex(64)
         keychain_data["ROLL" + str(index)] = generate_time(index).strftime('%Y-%m-%d.%H:%M:%S')
 
 

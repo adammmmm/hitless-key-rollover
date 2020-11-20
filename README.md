@@ -2,10 +2,10 @@
 
 This is my first foray into programming, so there are most likely loads of "wrong" ways of doing what I'm doing. The code has only been used with lab gear so I wouldn't recommend anyone to use it for production purposes without first looking at it, fixing every beginner mistake I've done. And after that, extensive testing.
 
-I got the idea when I was tasked with comparing MACsec options on Juniper/Cisco routers where Juniper's implementation of MKA (MACsec Key Agreement) don't support time-based SAK rekeys. On low bandwidths that's fine because it'll just rekey when 4 billion packets have been secured. On higher bandwidths you're forced to use XPN (eXtended Packet Numbering) though, which in practice means no SAK rekeying unless the CKN/CAK are changed. This could be an issue in some environments where you want regular rekeys.
+I got the idea when I was tasked with comparing MACsec options on Juniper/Cisco routers where Juniper's implementation of MKA (MACsec Key Agreement) didn't support time-based SAK rekeys. On low bandwidths that's fine because it'll just rekey when 4 billion packets have been secured. On higher bandwidths you're forced to use XPN (eXtended Packet Numbering) though, which in practice means no SAK rekeying unless the CKN/CAK are changed. This could be an issue in some environments where you want regular rekeys.
 So, you're recommended to keep the CKN/CAK rekeys short through hitless key rollover which in turn will rekey the SAK. But since no one want to manually send out new keys every other day I created this script. 
 
-That said, I'm assuming Juniper will implement a configuration knob which should make this script obsolete for the sake of SAK-rekeying. It'll still be useful for CKN/CAK though, but that could be at a much longer interval like every 4 weeks or so. 
+Nowadays, on 20.3, Juniper has implemented a configuration knob which should make this script obsolete for the sake of SAK-rekeying. It'll still be useful for CKN/CAK though, but that could be at a much longer interval like every 4 weeks or so. 
 
 ---
 

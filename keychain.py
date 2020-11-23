@@ -190,6 +190,8 @@ if __name__ == '__main__':
     if config_data["ROLLINTERVAL"] <= 1:
         print('Increase the ROLLINTERVAL in data.yml')
         sys.exit(1)
+    
+    os.getrandom(64) # Make sure entropy pool is initialized.
 
     if len(sys.argv) == 2:
         if sys.argv[1] == 'init':

@@ -31,7 +31,7 @@ ntp = []
 
 def create_keychain_dict():
     """ Fills the dictionary with CAK/CKN/ROLL values """
-    for index in range(52):
+    for index in range(32):
         keychain_data["CKN" + str(index)] = generate_hex(64)
         keychain_data["CAK" + str(index)] = generate_hex(64)
         keychain_data["ROLL" + str(index)] = generate_time(index).strftime('%Y-%m-%d.%H:%M:%S')
@@ -125,7 +125,7 @@ def check_keychain():
 def create_keychain():
     """ Create the keychain without any previous checks or input """
     with open('temp.j2', mode='w') as twr:
-        for index in range(51):
+        for index in range(31):
             twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')
             twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} key-name {{{{CKN{index}}}}}\n')
             twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} start-time "{{{{ROLL{index}}}}}"\n')
@@ -153,7 +153,7 @@ def create_keychain():
 def update_keychain():
     """ Update the keychain with information from the checks """
     with open('temp.j2', mode='w') as twr:
-        for index in range(51):
+        for index in range(31):
             if index >= int(used_id[0]):
                 twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index+1} secret {{{{CAK{index}}}}}\n')
                 twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index+1} key-name {{{{CKN{index}}}}}\n')

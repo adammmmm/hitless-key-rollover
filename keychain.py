@@ -175,7 +175,7 @@ def update_keychain():
         print(f'Configuring {router}')
         try:
             with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
-                conf = Config(dev)
+                conf = Config(dev, mode="private")
                 conf.load(template.render(keychain_data), format='set')
                 conf.commit(timeout=120, comment=f'Updated {config_data["KEYCHAIN-NAME"]} keychain')
         except Exception as exc:

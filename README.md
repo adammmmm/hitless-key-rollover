@@ -11,7 +11,7 @@ Nowadays, on 20.3, Juniper has implemented a configuration knob which should mak
 
 ### What it does
 
-It will create a dictionary of 52 key ids. All with maximum CKN/CAK lengths of random hex strings. The start-time will be current time plus the ROLLINTERVAL. It'll then log in to all HOSTS and show time source, the current key-chains and see if KEYCHAIN-NAME exists.
+It will create a dictionary of 31 key ids. All with maximum CKN/CAK lengths of random hex strings. The start-time will be current time plus the ROLLINTERVAL. It'll then log in to all HOSTS and show time source, the current key-chains and see if KEYCHAIN-NAME exists.
 
 After that some checks occur that NTP is active, the active send key and receive key are the same, that there are no next keys/times in the chain and appends the active key to a list.
 

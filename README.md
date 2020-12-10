@@ -17,7 +17,7 @@ After that some checks occur that NTP is active, the active send key and receive
 
 Then comes a check that we've got as many keys appended to the list as we have HOSTS after which we'll make sure every key is the same by making it a set instead of list.
 
-This information is then used to create a template j2 file populated with the 52 key id dictionary where the active key will be exempted.
+This information is then used to create a template j2 file populated with the 31 key id dictionary where the active key will be exempted.
 
 Eventually, it connects to all devices again and commit the configuration with a comment that will let people know what's happened.
 

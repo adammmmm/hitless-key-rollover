@@ -11,6 +11,7 @@ import yaml
 from jinja2 import Template
 from jnpr.junos import Device
 from jnpr.junos.utils.config import Config
+from jnpr.junos.exception import ConfigLoadError, CommitError, ConnectError
 
 lgr = logging.getLogger('keychain')
 lgr.setLevel(logging.INFO)
@@ -23,6 +24,7 @@ logfh.setFormatter(frmt)
 lgr.addHandler(logfh)
 
 HEX = '0123456789abcdef'
+committed = []
 keychain_data = {}
 keychain_set = set()
 used_id = []
@@ -122,6 +124,19 @@ def check_keychain():
             sys.exit(1)
 
 
+def rollback_changed(devices):
+    for router in devices:
+        print(f'Rolling back {router}')
+        try:
+            with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
+                conf = Config(dev, mode='private')
+                conf.rollback(rb_id=1)
+                conf.commit()
+        except Exception as exc:
+            print(f'PyEZ configuration exception, {exc}')
+            sys.exit(2)
+
+
 def create_keychain():
     """ Create the keychain without any previous checks or input """
     with open('temp.j2', mode='w') as twr:
@@ -142,9 +157,13 @@ def create_keychain():
         print(f'Configuring {router}')
         try:
             with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
-                conf = Config(dev)
+                conf = Config(dev, mode='private')
                 conf.load(template.render(keychain_data), format='set')
                 conf.commit(timeout=120, comment=f'Created {config_data["KEYCHAIN-NAME"]} keychain')
+                committed.append(router)
+        except (ConfigLoadError, CommitError, ConnectError) as exc:
+            print(f'PyEZ configuration exception, {exc}')
+            rollback_changed(committed)
         except Exception as exc:
             print(f'PyEZ configuration exception, {exc}')
             sys.exit(2)
@@ -152,6 +171,21 @@ def create_keychain():
 
 def update_keychain():
     """ Update the keychain with information from the checks """
+
+    # Check that no private or exclusive configs are in use
+    for router in config_data["HOSTS"]:
+        print(f'Checking configuration lock on {router}')
+        try:
+            with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
+                conf = Config(dev, mode='private')
+                conf.commit_check()
+        except CommitError as exc:
+            print(f'Configuration lock error, {exc}')
+            sys.exit(2)
+        except Exception as exc:
+            print(f'Error, {exc}')
+            sys.exit(2)
+
     with open('temp.j2', mode='w') as twr:
         for index in range(31):
             if index >= int(used_id[0]):
@@ -175,9 +209,13 @@ def update_keychain():
         print(f'Configuring {router}')
         try:
             with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
-                conf = Config(dev, mode="private")
+                conf = Config(dev, mode='private')
                 conf.load(template.render(keychain_data), format='set')
                 conf.commit(timeout=120, comment=f'Updated {config_data["KEYCHAIN-NAME"]} keychain')
+                committed.append(router)
+        except (ConfigLoadError, CommitError, ConnectError) as exc:
+            print(f'PyEZ configuration exception, {exc}')
+            rollback_changed(committed)
         except Exception as exc:
             print(f'PyEZ configuration exception, {exc}')
             sys.exit(2)
@@ -190,7 +228,7 @@ if __name__ == '__main__':
     if config_data["ROLLINTERVAL"] <= 1:
         print('Increase the ROLLINTERVAL in data.yml')
         sys.exit(1)
-    
+
     if len(sys.argv) == 2:
         if sys.argv[1] == 'init':
             create_keychain_dict()

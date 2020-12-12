@@ -124,14 +124,14 @@ def check_keychain():
             sys.exit(1)
 
 
-def rollback_changed(devices):
+def rollback_changed(devices, failed):
     for router in devices:
         print(f'Rolling back {router}')
         try:
             with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
                 conf = Config(dev, mode='private')
                 conf.rollback(rb_id=1)
-                conf.commit(timeout=120, comment='Rolled back, keychain update error on other router')
+                conf.commit(timeout=120, comment=f'Rolled back, keychain update error on {failed}')
         except Exception as exc:
             print(f'PyEZ configuration exception, {exc}')
             sys.exit(2)
@@ -163,7 +163,7 @@ def create_keychain():
                 committed.append(router)
         except (ConfigLoadError, CommitError, ConnectError) as exc:
             print(f'PyEZ configuration exception, {exc}')
-            rollback_changed(committed)
+            rollback_changed(committed, failed=router)
         except Exception as exc:
             print(f'PyEZ configuration exception, {exc}')
             sys.exit(2)

@@ -215,7 +215,7 @@ def update_keychain():
                 committed.append(router)
         except (ConfigLoadError, CommitError, ConnectError) as exc:
             print(f'PyEZ configuration exception, {exc}')
-            rollback_changed(committed)
+            rollback_changed(committed, failed=router)
         except Exception as exc:
             print(f'PyEZ configuration exception, {exc}')
             sys.exit(2)

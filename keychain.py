@@ -131,7 +131,7 @@ def rollback_changed(devices):
             with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
                 conf = Config(dev, mode='private')
                 conf.rollback(rb_id=1)
-                conf.commit()
+                conf.commit(timeout=120, comment='Rolled back, keychain update error on other router')
         except Exception as exc:
             print(f'PyEZ configuration exception, {exc}')
             sys.exit(2)

@@ -14,7 +14,7 @@ from jnpr.junos.utils.config import Config
 from jnpr.junos.exception import ConfigLoadError, CommitError, ConnectError
 from loguru import logger
 
-logger.add("keychain.log", enqueue=True)
+logger.add("keychain.log", rotation="monthly", enqueue=True)
 
 HEX = '0123456789abcdef'
 committed = []
@@ -101,7 +101,7 @@ def check_keychain():
 
     if len(used_id) == len(config_data["HOSTS"]):
         if len(set(used_id)) == 1:
-            logger.debug(f'All routers replied with the same key id: {used_id[0]}')
+            logger.info(f'All routers replied with the same key id: {used_id[0]}')
         else:
             logger.error(f'Router key id sync issue, got: {set(used_id)}')
             sys.exit(2)

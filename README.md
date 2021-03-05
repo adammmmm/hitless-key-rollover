@@ -33,14 +33,14 @@ pip install -r requirements.txt
 data.yml contains a couple variables you should change:
 
 - USER
-- PASS
+- KEY
 - ROLLINTERVAL
 - KEYCHAIN-NAME
 - NTP
-- LOGGING
+- DEBUG
 - HOSTS
 
-USER/PASS will be the credentials for the ssh connection to the routers. ROLLINTERVAL is how often the keys will be rolled over in hours, 2 hours minimum. KEYCHAIN-NAME is:
+USER/KEY will be the credentials for the ssh connection to the routers. ROLLINTERVAL is how often the keys will be rolled over in hours, 2 hours minimum. KEYCHAIN-NAME is:
 
 ```
 [ edit security authentication-key-chains key-chain KEYCHAIN-NAME ]
@@ -50,7 +50,7 @@ Running keychain.py without arguments needs the routers to already be configured
 
 NTP is whether to exit or not if NTP is not configured on the routers. Set to False only for testing.
 
-LOGGING should be True or False, if it's True keychain.log will have the clear-text values of every CKN/CAK.
+DEBUG should be True or False, if it's True keychain.log will have the clear-text values of every CKN/CAK.
 
 HOSTS should be all your routers, one per line.
 

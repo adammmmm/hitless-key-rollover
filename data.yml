@@ -1,10 +1,10 @@
 ---
 USER: root
-PASS: abc123
-ROLLINTERVAL: 8
+KEY: /root/.ssh/id_ed25519
+ROLLINTERVAL: 168
 KEYCHAIN-NAME: macsec
 NTP: True
-LOGGING: False
+DEBUG: False
 HOSTS:
   - 172.16.1.131
   - 192.168.74.130

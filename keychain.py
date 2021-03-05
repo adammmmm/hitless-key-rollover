@@ -12,16 +12,9 @@ from jinja2 import Template
 from jnpr.junos import Device
 from jnpr.junos.utils.config import Config
 from jnpr.junos.exception import ConfigLoadError, CommitError, ConnectError
+from loguru import logger
 
-lgr = logging.getLogger('keychain')
-lgr.setLevel(logging.INFO)
-
-logfh = logging.FileHandler('keychain.log')
-logfh.setLevel(logging.INFO)
-
-frmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logfh.setFormatter(frmt)
-lgr.addHandler(logfh)
+logger.add("keychain.log", enqueue=True)
 
 HEX = '0123456789abcdef'
 committed = []
@@ -44,7 +37,7 @@ def check_for_duplicates():
     for entries in keychain_data.values():
         keychain_set.add(entries)
     if len(keychain_data) != len(keychain_set):
-        print('Duplicate CAK/CKN value, aborting')
+        logger.warnning('Duplicate CAK/CKN value, aborting')
         sys.exit(1)
 
 
@@ -66,15 +59,16 @@ def remove_template():
     try:
         os.remove('temp.j2')
     except OSError as exc:
-        print(f'Failed to delete temporary template, {exc}')
+        logger.error(f'Failed to delete temporary template, {exc}')
+        sys.exit(2)
 
 
 def check_keychain():
     """ Sanity checks and needed information for updating the keychain """
     for router in config_data["HOSTS"]:
-        print(f'Checking {router}')
+        logger.info(f'Checking {router}')
         try:
-            with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
+            with Device(host=router, user=config_data["USER"], ssh_private_key_file=config_data["KEY"], port=22) as dev:
                 uptime_info = dev.rpc.get_system_uptime_information({"format": "json"})
                 time_source = uptime_info["system-uptime-information"][0]["time-source"]
                 if time_source[0]["data"] == ' NTP CLOCK ':
@@ -93,47 +87,47 @@ def check_keychain():
                                     if hknsk and hknrk and hknkt == 'None':
                                         used_id.append(hkask)
                                     else:
-                                        print(f'Next send key {hknsk}, next receive key {hknrk}, rolling over in {hknkt}')
+                                        logger.info(f'Next send key {hknsk}, next receive key {hknrk}, rolling over in {hknkt}')
                                         sys.exit(0)
                                 else:
-                                    print(f'Send key: {hkask}, Receive key: {hkark}')
+                                    logger.warning(f'Send key: {hkask}, Receive key: {hkark}')
                                     sys.exit(1)
         except KeyError:
-            print('PyEZ checking exception, a keychain is not configured, try init')
+            logger.error('PyEZ checking exception, a keychain is not configured, try init')
             sys.exit(2)
         except Exception as exc:
-            print(f'PyEZ checking exception, {exc}')
+            logger.error(f'PyEZ checking exception, {exc}')
             sys.exit(2)
 
     if len(used_id) == len(config_data["HOSTS"]):
         if len(set(used_id)) == 1:
-            print(f'All routers replied with the same key id: {used_id[0]}')
+            logger.debug(f'All routers replied with the same key id: {used_id[0]}')
         else:
-            print(f'Router key id sync issue, got: {set(used_id)}')
+            logger.error(f'Router key id sync issue, got: {set(used_id)}')
             sys.exit(2)
     else:
-        print(f'Only got an id from {len(used_id)} out of {len(config_data["HOSTS"])} devices, make sure KEYCHAIN-NAME is correct.')
+        logger.error(f'Only got an id from {len(used_id)} out of {len(config_data["HOSTS"])} devices, make sure KEYCHAIN-NAME is correct.')
         sys.exit(1)
 
     if len(ntp) == len(config_data["HOSTS"]):
-        print('NTP Configured on all hosts')
+        logger.info('NTP Configured on all hosts')
     else:
-        print('NTP Not configured on all hosts')
+        logger.warning('NTP Not configured on all hosts')
         if config_data["NTP"]:
-            print('Aborting')
+            logger.warning('Aborting')
             sys.exit(1)
 
 
-def rollback_changed(devices, failed):
+def rollback_changed(devices):
     for router in devices:
-        print(f'Rolling back {router}')
+        logger.error(f'Rolling back {router}')
         try:
-            with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
+            with Device(host=router, user=config_data["USER"], ssh_private_key_file=config_data["KEY"], port=22) as dev:
                 conf = Config(dev, mode='private')
                 conf.rollback(rb_id=1)
-                conf.commit(timeout=120, comment=f'Rolled back, keychain update error on {failed}')
+                conf.commit()
         except Exception as exc:
-            print(f'PyEZ configuration exception, {exc}')
+            logger.critical(f'PyEZ configuration exception while rolling back, {exc}')
             sys.exit(2)
 
 
@@ -150,22 +144,22 @@ def create_keychain():
 
     template = Template(t_format)
 
-    if config_data["LOGGING"]:
-        lgr.info(template.render(keychain_data))
+    if config_data["DEBUG"]:
+        logger.info(template.render(keychain_data))
 
     for router in config_data["HOSTS"]:
-        print(f'Configuring {router}')
+        logger.info(f'Configuring {router}')
         try:
-            with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
+            with Device(host=router, user=config_data["USER"], ssh_private_key_file=config_data["KEY"], port=22) as dev:
                 conf = Config(dev, mode='private')
                 conf.load(template.render(keychain_data), format='set')
                 conf.commit(timeout=120, comment=f'Created {config_data["KEYCHAIN-NAME"]} keychain')
                 committed.append(router)
         except (ConfigLoadError, CommitError, ConnectError) as exc:
-            print(f'PyEZ configuration exception, {exc}')
-            rollback_changed(committed, failed=router)
+            logger.error(f'PyEZ configuration exception, {exc}')
+            rollback_changed(committed)
         except Exception as exc:
-            print(f'PyEZ configuration exception, {exc}')
+            logger.critical(f'PyEZ configuration exception, {exc}')
             sys.exit(2)
 
 
@@ -174,16 +168,16 @@ def update_keychain():
 
     # Check that no private or exclusive configs are in use
     for router in config_data["HOSTS"]:
-        print(f'Checking configuration lock on {router}')
+        logger.info(f'Checking configuration lock on {router}')
         try:
-            with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
+            with Device(host=router, user=config_data["USER"], ssh_private_key_file=config_data["KEY"], port=22) as dev:
                 conf = Config(dev, mode='private')
                 conf.commit_check()
         except CommitError as exc:
-            print(f'Configuration lock error, {exc}')
+            logger.error(f'Configuration lock error, {exc}')
             sys.exit(2)
         except Exception as exc:
-            print(f'Error, {exc}')
+            logger.error(f'Error, {exc}')
             sys.exit(2)
 
     with open('temp.j2', mode='w') as twr:
@@ -202,22 +196,22 @@ def update_keychain():
 
     template = Template(t_format)
 
-    if config_data["LOGGING"]:
-        lgr.info(template.render(keychain_data))
+    if config_data["DEBUG"]:
+        logger.info(template.render(keychain_data))
 
     for router in config_data["HOSTS"]:
-        print(f'Configuring {router}')
+        logger.info(f'Configuring {router}')
         try:
-            with Device(host=router, user=config_data["USER"], passwd=config_data["PASS"], port=22) as dev:
+            with Device(host=router, user=config_data["USER"], ssh_private_key_file=config_data["KEY"], port=22) as dev:
                 conf = Config(dev, mode='private')
                 conf.load(template.render(keychain_data), format='set')
                 conf.commit(timeout=120, comment=f'Updated {config_data["KEYCHAIN-NAME"]} keychain')
                 committed.append(router)
         except (ConfigLoadError, CommitError, ConnectError) as exc:
-            print(f'PyEZ configuration exception, {exc}')
-            rollback_changed(committed, failed=router)
+            logger.error(f'PyEZ configuration exception, {exc}')
+            rollback_changed(committed)
         except Exception as exc:
-            print(f'PyEZ configuration exception, {exc}')
+            logger.critical(f'PyEZ configuration exception, {exc}')
             sys.exit(2)
 
 
@@ -226,7 +220,7 @@ if __name__ == '__main__':
         config_data = yaml.load(fh.read(), Loader=yaml.SafeLoader)
 
     if config_data["ROLLINTERVAL"] <= 1:
-        print('Increase the ROLLINTERVAL in data.yml')
+        logger.info('Increase the ROLLINTERVAL in data.yml')
         sys.exit(1)
 
     if len(sys.argv) == 2:
@@ -236,7 +230,7 @@ if __name__ == '__main__':
             create_keychain()
             remove_template()
         else:
-            print('Use no arguments to update the keychain or "init" to create an initial keychain')
+            logger.info('Use no arguments to update the keychain or "init" to create an initial keychain')
     else:
         check_keychain()
         create_keychain_dict()

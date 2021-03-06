@@ -106,6 +106,9 @@ venv.bak/
 # temporary j2-file
 temp.j2
 
+# logfile
+keychain.log
+
 # vscode
 .vscode/
 

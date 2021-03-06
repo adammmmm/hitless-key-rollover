@@ -1,4 +1,4 @@
-# Hitless Key Rollover
+# Hitless Key Rollover [![CodeQL](https://github.com/adammmmm/hitless-key-rollover/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/adammmmm/hitless-key-rollover/actions/workflows/codeql-analysis.yml)
 
 I got the idea when I was tasked with comparing MACsec options on Juniper/Cisco routers where Juniper's implementation of MKA (MACsec Key Agreement) didn't support time-based SAK rekeys. On low bandwidths that's fine because it'll just rekey when 4 billion packets have been secured. On higher bandwidths you're forced to use XPN (eXtended Packet Numbering) though, which in practice means no SAK rekeying unless the CKN/CAK are changed. This could be an issue in some environments where you want regular rekeys.
 So, you're recommended to keep the CKN/CAK rekeys short through hitless key rollover which in turn will rekey the SAK. But since no one want to manually send out new keys every other day I created this script. 

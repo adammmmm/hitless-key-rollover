@@ -1,11 +1,11 @@
 # Hitless Key Rollover
 
-This is my first foray into programming, so there are most likely loads of "wrong" ways of doing what I'm doing. The code has only been used with lab gear so I wouldn't recommend anyone to use it for production purposes without first looking at it, fixing every beginner mistake I've done. And after that, extensive testing.
+This is my first foray into programming, so there are most likely loads of "wrong" ways of doing what I'm doing. I've tried to find as many bugs as possible, but I'd still do extensive testing before using it in production.
 
 I got the idea when I was tasked with comparing MACsec options on Juniper/Cisco routers where Juniper's implementation of MKA (MACsec Key Agreement) didn't support time-based SAK rekeys. On low bandwidths that's fine because it'll just rekey when 4 billion packets have been secured. On higher bandwidths you're forced to use XPN (eXtended Packet Numbering) though, which in practice means no SAK rekeying unless the CKN/CAK are changed. This could be an issue in some environments where you want regular rekeys.
 So, you're recommended to keep the CKN/CAK rekeys short through hitless key rollover which in turn will rekey the SAK. But since no one want to manually send out new keys every other day I created this script. 
 
-Nowadays, on 20.3, Juniper has implemented a configuration knob which should make this script obsolete for the sake of SAK-rekeying. It'll still be useful for CKN/CAK though, but that could be at a much longer interval like every 4 weeks or so. 
+From 20.3 and onwards, Juniper has implemented a configuration knob which should make this script obsolete for the sake of SAK-rekeying. It'll still be useful for CKN/CAK though, but that could be at a much longer interval like every 4 weeks or so. 
 
 ---
 
@@ -19,7 +19,7 @@ Then comes a check that we've got as many keys appended to the list as we have H
 
 This information is then used to create a template j2 file populated with the 31 key id dictionary where the active key will be exempted.
 
-Eventually, it connects to all devices again and commit the configuration with a comment that will let people know what's happened.
+Eventually, it connects to all devices again and after first checking for configuration locks, commit the configuration with a comment that will let people know what's happened, if something bad happens, it does try and roll back configuration that might have already been committed to other routers.
 
 ---
 
@@ -62,5 +62,5 @@ Add keychain.py to crontab and make it execute once every hour or so, here's an 
 
 ---
 
-If you don't already have a keychain configured you can run "keychain.py init" to create one from scratch, it ignores all the checks and just creates a keychain with key 0-51. 
+If you don't already have a keychain configured you can run "keychain.py init" to create one from scratch, it ignores all the checks and just creates a keychain with key 0-31. 
 ## DO NOT USE THE init ARGUMENT IN CRONTAB

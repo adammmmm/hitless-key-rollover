@@ -4,7 +4,7 @@ cryptography==3.4.7
 Jinja2==2.11.3
 junos-eznc==2.5.4
 loguru==0.5.3
-lxml==4.6.2
+lxml==4.6.3
 MarkupSafe==1.1.1
 ncclient==0.6.10
 netaddr==0.8.0

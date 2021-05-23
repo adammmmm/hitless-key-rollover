@@ -5,7 +5,7 @@ Jinja2==2.11.3
 junos-eznc==2.6.0
 loguru==0.5.3
 lxml==4.6.3
-MarkupSafe==1.1.1
+MarkupSafe==2.0.1
 ncclient==0.6.10
 netaddr==0.8.0
 paramiko==2.7.2

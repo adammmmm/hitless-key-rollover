@@ -75,17 +75,17 @@ def check_keychain():
                 normalize=True,
             ) as dev:
                 uptime_info = dev.rpc.get_system_uptime_information()
-                time_source = uptime_info.find("time-source").text
+                time_source = uptime_info.findtext("time-source")
                 if time_source == "NTP CLOCK":
                     ntp.append("yes")
                 hakr = dev.rpc.get_hakr_keychain_information()
                 keychain = hakr.find(f"./hakr-keychain[hakr-keychain-name='{cfg['KEYCHAIN-NAME']}']")
                 if keychain is not None:
-                    hkask = keychain.find("hakr-keychain-active-send-key").text
-                    hkark = keychain.find("hakr-keychain-active-receive-key").text
-                    hknsk = keychain.find("hakr-keychain-next-send-key").text
-                    hknrk = keychain.find("hakr-keychain-next-receive-key").text
-                    hknkt = keychain.find("hakr-keychain-next-key-time").text
+                    hkask = keychain.findtext("hakr-keychain-active-send-key")
+                    hkark = keychain.findtext("hakr-keychain-active-receive-key")
+                    hknsk = keychain.findtext("hakr-keychain-next-send-key")
+                    hknrk = keychain.findtext("hakr-keychain-next-receive-key")
+                    hknkt = keychain.findtext("hakr-keychain-next-key-time")
                     if hkask == hkark:
                         if hknsk and hknrk and hknkt == "None":
                             used_id.append(hkask)

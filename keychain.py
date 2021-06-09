@@ -48,8 +48,8 @@ def generate_hex(length):
 
 def generate_time(index):
     """ Helper function to return timedeltas from passed id """
-    next_time = datetime.now() + timedelta(hours=config_data["ROLLINTERVAL"])
-    add_time = next_time + (timedelta(hours=config_data["ROLLINTERVAL"]) * index)
+    next_time = datetime.now() + timedelta(hours=cfg["ROLLINTERVAL"])
+    add_time = next_time + (timedelta(hours=cfg["ROLLINTERVAL"]) * index)
     return add_time
 
 
@@ -64,38 +64,37 @@ def remove_template():
 
 def check_keychain():
     """ Sanity checks and needed information for updating the keychain """
-    for router in config_data["HOSTS"]:
+    for router in cfg["HOSTS"]:
         logger.info(f"Checking {router}")
         try:
             with Device(
                 host=router,
-                user=config_data["USER"],
-                ssh_private_key_file=config_data["KEY"],
+                user=cfg["USER"],
+                ssh_private_key_file=cfg["KEY"],
                 port=22,
+                normalize=True,
             ) as dev:
-                uptime_info = dev.rpc.get_system_uptime_information({"format": "json"})
-                time_source = uptime_info["system-uptime-information"][0]["time-source"]
-                if time_source[0]["data"] == " NTP CLOCK ":
+                uptime_info = dev.rpc.get_system_uptime_information()
+                time_source = uptime_info.find("time-source").text
+                if time_source == "NTP CLOCK":
                     ntp.append("yes")
-                hakr_dict = dev.rpc.get_hakr_keychain_information({"format": "json"})
-                if hakr_dict:
-                    for keychains in hakr_dict["hakr-keychain-information"]:
-                        for key_id in keychains["hakr-keychain"]:
-                            if key_id["hakr-keychain-name"][0]["data"] == config_data["KEYCHAIN-NAME"]:
-                                hkask = key_id["hakr-keychain-active-send-key"][0]["data"]
-                                hkark = key_id["hakr-keychain-active-receive-key"][0]["data"]
-                                hknsk = key_id["hakr-keychain-next-send-key"][0]["data"]
-                                hknrk = key_id["hakr-keychain-next-receive-key"][0]["data"]
-                                hknkt = key_id["hakr-keychain-next-key-time"][0]["data"]
-                                if hkask == hkark:
-                                    if hknsk and hknrk and hknkt == "None":
-                                        used_id.append(hkask)
-                                    else:
-                                        logger.info(f"Next send key {hknsk}, next receive key {hknrk}, rolling over in {hknkt}")
-                                        sys.exit(0)
-                                else:
-                                    logger.warning(f"Send key: {hkask}, Receive key: {hkark}")
-                                    sys.exit(1)
+                hakr = dev.rpc.get_hakr_keychain_information()
+                keychain = hakr.find(f"./hakr-keychain[hakr-keychain-name='{cfg['KEYCHAIN-NAME']}']")
+                if keychain is not None:
+                    hkask = keychain.find("hakr-keychain-active-send-key").text
+                    hkark = keychain.find("hakr-keychain-active-receive-key").text
+                    hknsk = keychain.find("hakr-keychain-next-send-key").text
+                    hknrk = keychain.find("hakr-keychain-next-receive-key").text
+                    hknkt = keychain.find("hakr-keychain-next-key-time").text
+                    if hkask == hkark:
+                        if hknsk and hknrk and hknkt == "None":
+                            used_id.append(hkask)
+                        else:
+                            logger.info(f"Next send key {hknsk}, next receive key {hknrk}, rolling over in {hknkt}")
+                            sys.exit(0)
+                    else:
+                        logger.warning(f"Send key: {hkask}, Receive key: {hkark}")
+                        sys.exit(1)
         except KeyError:
             logger.error("PyEZ checking exception, a keychain is not configured, try init")
             sys.exit(2)
@@ -103,21 +102,21 @@ def check_keychain():
             logger.error(f"PyEZ checking exception, {exc}")
             sys.exit(2)
 
-    if len(used_id) == len(config_data["HOSTS"]):
+    if len(used_id) == len(cfg["HOSTS"]):
         if len(set(used_id)) == 1:
             logger.info(f"All routers replied with the same key id: {used_id[0]}")
         else:
             logger.error(f"Router key id sync issue, got: {set(used_id)}")
             sys.exit(2)
     else:
-        logger.error(f'Only got an id from {len(used_id)} out of {len(config_data["HOSTS"])} devices, make sure KEYCHAIN-NAME is correct.')
+        logger.error(f'Only got an id from {len(used_id)} out of {len(cfg["HOSTS"])} devices, make sure KEYCHAIN-NAME is correct.')
         sys.exit(1)
 
-    if len(ntp) == len(config_data["HOSTS"]):
+    if len(ntp) == len(cfg["HOSTS"]):
         logger.info("NTP Configured on all hosts")
     else:
         logger.warning("NTP Not configured on all hosts")
-        if config_data["NTP"]:
+        if cfg["NTP"]:
             logger.warning("Aborting")
             sys.exit(1)
 
@@ -128,8 +127,8 @@ def rollback_changed(devices, failed):
         try:
             with Device(
                 host=router,
-                user=config_data["USER"],
-                ssh_private_key_file=config_data["KEY"],
+                user=cfg["USER"],
+                ssh_private_key_file=cfg["KEY"],
                 port=22,
             ) as dev:
                 conf = Config(dev, mode="private")
@@ -144,32 +143,32 @@ def create_keychain():
     """ Create the keychain without any previous checks or input """
     with open("temp.j2", mode="w") as twr:
         for index in range(31):
-            twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')
-            twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} key-name {{{{CKN{index}}}}}\n')
-            twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} start-time "{{{{ROLL{index}}}}}"\n')
+            twr.write(f'set security authentication-key-chains key-chain {cfg["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')
+            twr.write(f'set security authentication-key-chains key-chain {cfg["KEYCHAIN-NAME"]} key {index} key-name {{{{CKN{index}}}}}\n')
+            twr.write(f'set security authentication-key-chains key-chain {cfg["KEYCHAIN-NAME"]} key {index} start-time "{{{{ROLL{index}}}}}"\n')
 
     with open("temp.j2") as t_fh:
         t_format = t_fh.read()
 
     template = Template(t_format)
 
-    if config_data["DEBUG"]:
+    if cfg["DEBUG"]:
         logger.info(template.render(keychain_data))
 
-    for router in config_data["HOSTS"]:
+    for router in cfg["HOSTS"]:
         logger.info(f"Configuring {router}")
         try:
             with Device(
                 host=router,
-                user=config_data["USER"],
-                ssh_private_key_file=config_data["KEY"],
+                user=cfg["USER"],
+                ssh_private_key_file=cfg["KEY"],
                 port=22,
             ) as dev:
                 conf = Config(dev, mode="private")
                 conf.load(template.render(keychain_data), format="set")
                 conf.commit(
                     timeout=120,
-                    comment=f'Created {config_data["KEYCHAIN-NAME"]} keychain',
+                    comment=f'Created {cfg["KEYCHAIN-NAME"]} keychain',
                 )
                 committed.append(router)
         except (ConfigLoadError, CommitError, ConnectError) as exc:
@@ -187,13 +186,13 @@ def update_keychain():
     """ Update the keychain with information from the checks """
 
     # Check that no private or exclusive configs are in use
-    for router in config_data["HOSTS"]:
+    for router in cfg["HOSTS"]:
         logger.info(f"Checking configuration lock on {router}")
         try:
             with Device(
                 host=router,
-                user=config_data["USER"],
-                ssh_private_key_file=config_data["KEY"],
+                user=cfg["USER"],
+                ssh_private_key_file=cfg["KEY"],
                 port=22,
             ) as dev:
                 conf = Config(dev, mode="exclusive")
@@ -208,36 +207,36 @@ def update_keychain():
     with open("temp.j2", mode="w") as twr:
         for index in range(31):
             if index >= int(used_id[0]):
-                twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index+1} secret {{{{CAK{index}}}}}\n')
-                twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index+1} key-name {{{{CKN{index}}}}}\n')
-                twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index+1} start-time "{{{{ROLL{index}}}}}"\n')
+                twr.write(f'set security authentication-key-chains key-chain {cfg["KEYCHAIN-NAME"]} key {index+1} secret {{{{CAK{index}}}}}\n')
+                twr.write(f'set security authentication-key-chains key-chain {cfg["KEYCHAIN-NAME"]} key {index+1} key-name {{{{CKN{index}}}}}\n')
+                twr.write(f'set security authentication-key-chains key-chain {cfg["KEYCHAIN-NAME"]} key {index+1} start-time "{{{{ROLL{index}}}}}"\n')
                 continue
-            twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')
-            twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} key-name {{{{CKN{index}}}}}\n')
-            twr.write(f'set security authentication-key-chains key-chain {config_data["KEYCHAIN-NAME"]} key {index} start-time "{{{{ROLL{index}}}}}"\n')
+            twr.write(f'set security authentication-key-chains key-chain {cfg["KEYCHAIN-NAME"]} key {index} secret {{{{CAK{index}}}}}\n')
+            twr.write(f'set security authentication-key-chains key-chain {cfg["KEYCHAIN-NAME"]} key {index} key-name {{{{CKN{index}}}}}\n')
+            twr.write(f'set security authentication-key-chains key-chain {cfg["KEYCHAIN-NAME"]} key {index} start-time "{{{{ROLL{index}}}}}"\n')
 
     with open("temp.j2") as t_fh:
         t_format = t_fh.read()
 
     template = Template(t_format)
 
-    if config_data["DEBUG"]:
+    if cfg["DEBUG"]:
         logger.info(template.render(keychain_data))
 
-    for router in config_data["HOSTS"]:
+    for router in cfg["HOSTS"]:
         logger.info(f"Configuring {router}")
         try:
             with Device(
                 host=router,
-                user=config_data["USER"],
-                ssh_private_key_file=config_data["KEY"],
+                user=cfg["USER"],
+                ssh_private_key_file=cfg["KEY"],
                 port=22,
             ) as dev:
                 conf = Config(dev, mode="private")
                 conf.load(template.render(keychain_data), format="set")
                 conf.commit(
                     timeout=120,
-                    comment=f'Updated {config_data["KEYCHAIN-NAME"]} keychain',
+                    comment=f'Updated {cfg["KEYCHAIN-NAME"]} keychain',
                 )
                 committed.append(router)
         except (ConfigLoadError, CommitError, ConnectError) as exc:
@@ -253,9 +252,9 @@ def update_keychain():
 
 if __name__ == "__main__":
     with open("data.yml") as fh:
-        config_data = yaml.load(fh.read(), Loader=yaml.SafeLoader)
+        cfg = yaml.load(fh.read(), Loader=yaml.SafeLoader)
 
-    if config_data["ROLLINTERVAL"] <= 1:
+    if cfg["ROLLINTERVAL"] <= 1:
         logger.info("Increase the ROLLINTERVAL in data.yml")
         sys.exit(1)
 

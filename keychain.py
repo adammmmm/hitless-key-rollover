@@ -95,6 +95,9 @@ def check_keychain():
                     else:
                         logger.warning(f"Send key: {hkask}, Receive key: {hkark}")
                         sys.exit(1)
+                else:
+                    logger.warning(f"Didn't get an id from {router}, make sure KEYCHAIN-NAME is correct.")
+                    sys.exit(1)
         except KeyError:
             logger.error("PyEZ checking exception, a keychain is not configured, try init")
             sys.exit(2)

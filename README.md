@@ -9,6 +9,12 @@ I've tried to fix as many bugs as possible, but I'd still do extensive testing b
 
 ---
 
+### Limitations
+
+It doesn't currently support devices in different time-zones. To support that it would have to create different templates for each device because junos automatically sets the UTC offset in start-time to the configured system time-zone.
+
+---
+
 ### What it does
 
 It will create a dictionary of 31 key ids. All with maximum CKN/CAK lengths of random hex strings. The start-time will be current time plus the ROLLINTERVAL. It'll then log in to all HOSTS and show time source, the current key-chains and see if KEYCHAIN-NAME exists.

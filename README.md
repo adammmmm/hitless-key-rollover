@@ -11,7 +11,7 @@ I've tried to fix as many bugs as possible, but I'd still do extensive testing b
 
 ### Limitations
 
-It doesn't currently support devices in different time-zones. To support that it would have to create different templates for each device because junos automatically sets the UTC offset in start-time to the configured system time-zone.
+It doesn't currently support devices in different time-zones. To get that to work it would have to create different templates for each device because junos automatically sets the UTC offset in start-time to the configured system time-zone, and it isn't configurable.
 
 ---
 

@@ -4,11 +4,6 @@
 name: Python package
 
 on:
-  push:
-    branches: [ master ]
-    paths-ignore:
-       - '**.md'
-       - '**.yml'
   pull_request:
     branches: [ master ]
   workflow_dispatch:

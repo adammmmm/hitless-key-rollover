@@ -20,7 +20,6 @@ committed = []
 keychain_data = {}
 keychain_set = set()
 used_id = []
-ntp = []
 
 
 def create_keychain_dict():
@@ -64,6 +63,7 @@ def remove_template():
 
 def check_keychain():
     """ Sanity checks and needed information for updating the keychain """
+    ntp = 0
     for router in cfg["HOSTS"]:
         logger.info(f"Checking {router}")
         try:
@@ -77,7 +77,7 @@ def check_keychain():
                 uptime_info = dev.rpc.get_system_uptime_information()
                 time_source = uptime_info.findtext(".//time-source")
                 if time_source == "NTP CLOCK":
-                    ntp.append("yes")
+                    ntp += 1
                 hakr = dev.rpc.get_hakr_keychain_information()
                 keychain = hakr.find(f"./hakr-keychain[hakr-keychain-name='{cfg['KEYCHAIN-NAME']}']")
                 if keychain is not None:
@@ -115,7 +115,7 @@ def check_keychain():
         logger.error(f'Only got an id from {len(used_id)} out of {len(cfg["HOSTS"])} devices, make sure KEYCHAIN-NAME is correct.')
         sys.exit(1)
 
-    if len(ntp) == len(cfg["HOSTS"]):
+    if ntp == len(cfg["HOSTS"]):
         logger.info("NTP Configured on all hosts")
     else:
         logger.warning("NTP Not configured on all hosts")

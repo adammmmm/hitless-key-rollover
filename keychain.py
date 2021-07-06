@@ -75,7 +75,7 @@ def check_keychain():
                 normalize=True,
             ) as dev:
                 uptime_info = dev.rpc.get_system_uptime_information()
-                time_source = uptime_info.findtext("time-source")
+                time_source = uptime_info.findtext(".//time-source")
                 if time_source == "NTP CLOCK":
                     ntp.append("yes")
                 hakr = dev.rpc.get_hakr_keychain_information()

@@ -16,5 +16,5 @@ pyserial==3.5
 PyYAML==6.0
 scp==0.14.2
 six==1.16.0
-transitions==0.8.9
+transitions==0.8.10
 yamlordereddictloader==0.4.0

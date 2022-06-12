@@ -2,11 +2,11 @@ bcrypt==3.2.2
 cffi==1.15.0
 cryptography==36.0.1
 Jinja2==3.1.2
-junos-eznc==2.6.3
+junos-eznc==2.6.4
 loguru==0.6.0
 lxml==4.9.0
 MarkupSafe==2.0.1
-ncclient==0.6.9
+ncclient==0.6.13
 netaddr==0.8.0
 paramiko==2.11.0
 pycparser==2.21

@@ -2,7 +2,7 @@ bcrypt==4.0.1
 cffi==1.15.1
 cryptography==38.0.3
 Jinja2==3.1.2
-junos-eznc==2.6.5
+junos-eznc==2.6.6
 loguru==0.6.0
 lxml==4.9.1
 MarkupSafe==2.1.1

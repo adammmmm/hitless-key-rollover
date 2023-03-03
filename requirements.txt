@@ -1,6 +1,6 @@
 bcrypt==4.0.1
 cffi==1.15.1
-cryptography==38.0.3
+cryptography==39.0.2
 Jinja2==3.1.2
 junos-eznc==2.6.5
 loguru==0.6.0

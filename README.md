@@ -5,7 +5,8 @@ So, you're recommended to keep the CKN/CAK rekeys short through hitless key roll
 
 From 20.3 and onwards, Juniper has implemented a configuration knob which should make this script obsolete for the sake of SAK-rekeying. It'll still be useful for CKN/CAK though, but that could be at a much longer interval like every 4 weeks or so. 
 
-I've tried to fix as many bugs as possible, but I'd still do extensive testing before using it in production.
+It's been running in a production environment with around 20 routers of various models and versions for 5 years. 
+I'd still recommend testing on your own before using it however.
 
 ---
 

@@ -6,7 +6,7 @@ junos-eznc==2.7.4
 loguru==0.7.3
 lxml==6.0.0
 markupsafe==3.0.2
-ncclient==0.6.15
+ncclient==0.7.0
 paramiko==3.5.1
 pycparser==2.22
 pynacl==1.5.0

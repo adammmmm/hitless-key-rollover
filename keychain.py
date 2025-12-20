@@ -32,10 +32,9 @@ def create_keychain_dict():
 
 def check_for_duplicates():
     """ Checks for duplicate CKN/CAK values """
-    for entries in keychain_data.values():
-        keychain_set.add(entries)
+    keychain_set = set(keychain_data.values())
     if len(keychain_data) != len(keychain_set):
-        logger.warnning("Duplicate CAK/CKN value, aborting")
+        logger.warning("Duplicate CAK/CKN value, aborting")
         sys.exit(1)
 
 

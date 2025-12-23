@@ -11,7 +11,7 @@ ncclient==0.7.0
 paramiko==4.0.0
 pycparser==2.23
 pynacl==1.6.1
-pyparsing==3.2.5
+pyparsing==3.3.1
 pyserial==3.5
 pyyaml==6.0.3
 scp==0.15.0

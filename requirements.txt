@@ -3,7 +3,7 @@ cffi==2.0.0
 cryptography==46.0.3
 invoke==2.2.1
 jinja2==3.1.6
-junos-eznc==2.7.5
+junos-eznc==2.7.6
 loguru==0.7.3
 lxml==6.0.2
 markupsafe==3.0.3

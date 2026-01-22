@@ -15,7 +15,7 @@ pyparsing==3.3.1
 pyserial==3.5
 pyyaml==6.0.3
 scp==0.15.0
-setuptools==80.9.0
+setuptools==80.10.1
 six==1.17.0
 transitions==0.9.3
 yamlordereddictloader==0.4.2
